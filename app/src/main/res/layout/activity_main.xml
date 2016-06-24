@@ -174,7 +174,9 @@
             style="@style/icon.left"
             android:src="@drawable/ic_account_circle_grey_24dp"/>
 
-        <LinearLayout style="@style/edit_text_layout">
+        <LinearLayout
+            style="@style/edit_text_layout"
+            android:layout_height="wrap_content">
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
@@ -184,7 +186,6 @@
                     android:id="@+id/about_et"
                     style="@style/edit_text"
                     android:hint="@string/about_hint"
-                    android:inputType="textCapSentences"
                     android:text="@string/about_text"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
