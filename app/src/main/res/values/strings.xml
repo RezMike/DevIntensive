@@ -1,3 +1,19 @@
 <resources>
-    <string name="app_name">DevIntensive</string>
+    <string name="app_name">Михаил Резниченко</string>
+    <string name="rating">Рейтинг</string>
+    <string name="rating_number">5</string>
+    <string name="code_strings">Написано строк кода</string>
+    <string name="code_strings_number">5</string>
+    <string name="projects">Проектов</string>
+    <string name="projects_number">5</string>
+    <string name="phone_hint">Мобильный</string>
+    <string name="phone_text">+7 (951) 395-07-62</string>
+    <string name="email_hint">E-mail</string>
+    <string name="email_text">mihail.reznichenko.98@mail.ru</string>
+    <string name="vk_hint">Профиль в VK</string>
+    <string name="vk_text">vk.com/rezmike</string>
+    <string name="repository_hint">Репозиторий</string>
+    <string name="repository_text">github.com/RezMike/DevIntensive</string>
+    <string name="about_hint">О себе</string>
+    <string name="about_text">Введите информацию о себе</string>
 </resources>
