@@ -98,6 +98,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "OnPause");
+        saveUserInfoValue();
     }
 
     @Override
