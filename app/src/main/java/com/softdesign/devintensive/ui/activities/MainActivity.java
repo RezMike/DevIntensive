@@ -1,5 +1,7 @@
 package com.softdesign.devintensive.ui.activities;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -17,6 +19,7 @@ import android.widget.ImageView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.ui.custom.RoundedDrawable;
 import com.softdesign.devintensive.utils.ConstantManager;
 
 import java.util.ArrayList;
@@ -32,6 +35,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private CoordinatorLayout mCoordinatorLayout;
     private Toolbar mToolbar;
     private DrawerLayout mNavigationDrawer;
+    private NavigationView mNavigationView;
     private FloatingActionButton mFab;
 
     private EditText mUserPhone, mUserMail, mUserVk, mUserGit, mUserBio;
@@ -48,6 +52,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.main_coordinator_container);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mNavigationDrawer = (DrawerLayout) findViewById(R.id.navigation_drawer);
+        mNavigationView = (NavigationView) findViewById(R.id.navigation_view);
         mFab = (FloatingActionButton) findViewById(R.id.fab);
         mUserPhone = (EditText) findViewById(R.id.phone_et);
         mUserMail = (EditText) findViewById(R.id.email_et);
@@ -65,6 +70,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mFab.setOnClickListener(this);
         setupToolbar();
         setupDrawer();
+        setRoundedAvatar();
         loadUserInfoValue();
 
         if (savedInstanceState == null) {
@@ -164,8 +170,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void setupDrawer() {
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+        mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
                 showSnackBar(item.getTitle().toString());
@@ -174,6 +179,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 return false;
             }
         });
+    }
+
+    private void setRoundedAvatar(){
+        View headerLayout = mNavigationView.getHeaderView(0);
+        ImageView avatarImg = (ImageView) headerLayout.findViewById(R.id.avatar);
+        Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.avatar);
+        RoundedDrawable roundedDrawable = new RoundedDrawable(bitmap);
+        avatarImg.setImageDrawable(roundedDrawable);
     }
 
     /**

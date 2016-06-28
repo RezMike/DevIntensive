@@ -10,9 +10,9 @@
     android:background="@drawable/header_bg">
 
     <ImageView
+        android:id="@+id/avatar"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:background="@color/color_accent"
         android:layout_marginTop="@dimen/spacing_normal_16"/>
 
     <LinearLayout
