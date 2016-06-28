@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!--Change FAB right spacing for API 21 and above-->
-    <dimen name="spacing_fab_right">16dp</dimen>
-</resources>
