@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Михаил Резниченко</string>
+    <string name="app_name">Резниченко Михаил</string>
     <string name="rating">Рейтинг</string>
     <string name="rating_number">5</string>
     <string name="code_strings">Написано строк кода</string>
@@ -15,5 +15,14 @@
     <string name="repository_hint">Репозиторий</string>
     <string name="repository_text">github.com/RezMike/DevIntensive</string>
     <string name="about_hint">О себе</string>
-    <string name="about_text">Введите информацию о себе</string>
+    <string name="about_text">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+        laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+        voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
+        non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </string>
+    <string name="name">Резниченко Михаил</string>
+    <string name="my_profile">Мой профиль</string>
+    <string name="team">Команда</string>
 </resources>
