@@ -5,7 +5,7 @@ public class DataManager {
 
     private PreferencesManager mPreferencesManager;
 
-    public DataManager() {
+    private DataManager() {
         this.mPreferencesManager = new PreferencesManager();
     }
 
