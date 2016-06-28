@@ -2,14 +2,12 @@
 <android.support.v4.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation_drawer"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <android.support.design.widget.CoordinatorLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/main_coordinator_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -18,7 +16,7 @@
             android:id="@+id/appbar_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/grey"
+            android:background="@color/color_primary"
             android:fitsSystemWindows="true"
             android:theme="@style/AppTheme.AppBarOverlay">
 
@@ -26,7 +24,7 @@
                 android:id="@+id/collapsing_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:contentScrim="@color/grey"
+                app:contentScrim="@color/color_primary"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
                 <ImageView
@@ -42,7 +40,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     android:theme="@style/AppTheme.PopupOverlay"
-                    android:titleTextColor="@color/white"
                     app:layout_collapseMode="pin"/>
 
             </android.support.design.widget.CollapsingToolbarLayout>
@@ -56,8 +53,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
-                tools:context=".ui.activities.MainActivity">
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -210,7 +206,7 @@
                             android:layout_height="wrap_content">
 
                             <EditText
-                                android:id="@+id/repository_et"
+                                android:id="@+id/git_et"
                                 style="@style/edit_text"
                                 android:hint="@string/repository_hint"
                                 android:inputType="textWebEditText"
@@ -240,7 +236,7 @@
                             android:layout_height="wrap_content">
 
                             <EditText
-                                android:id="@+id/about_et"
+                                android:id="@+id/bio_et"
                                 style="@style/edit_text"
                                 android:hint="@string/about_hint"
                                 android:text="@string/about_text"/>
@@ -254,6 +250,7 @@
             </LinearLayout>
         </android.support.v4.widget.NestedScrollView>
         <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="@dimen/spacing_fab_right"
