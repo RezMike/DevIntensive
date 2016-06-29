@@ -46,67 +46,16 @@
         </android.support.design.widget.AppBarLayout>
 
         <android.support.v4.widget.NestedScrollView
+            android:id="@+id/nested_scroll_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
                 android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/grey"
-                    android:orientation="horizontal">
-
-                    <LinearLayout
-                        style="@style/score_layout"
-                        android:layout_weight="1">
-
-                        <TextView
-                            style="@style/score_text.count"
-                            android:text="@string/rating_number"/>
-
-                        <TextView
-                            style="@style/score_text"
-                            android:text="@string/rating"/>
-
-                    </LinearLayout>
-
-                    <View style="@style/separator_vertical"/>
-
-                    <LinearLayout
-                        style="@style/score_layout"
-                        android:layout_weight="2">
-
-                        <TextView
-                            style="@style/score_text.count"
-                            android:text="@string/code_strings_number"/>
-
-                        <TextView
-                            style="@style/score_text"
-                            android:text="@string/code_strings"/>
-
-                    </LinearLayout>
-
-                    <View style="@style/separator_vertical"/>
-
-                    <LinearLayout
-                        style="@style/score_layout"
-                        android:layout_weight="1">
-
-                        <TextView
-                            style="@style/score_text.count"
-                            android:text="@string/projects_number"/>
-
-                        <TextView
-                            style="@style/score_text"
-                            android:text="@string/projects"/>
-
-                    </LinearLayout>
-                </LinearLayout>
 
                 <LinearLayout style="@style/item_layout">
 
@@ -249,6 +198,71 @@
                 </LinearLayout>
             </LinearLayout>
         </android.support.v4.widget.NestedScrollView>
+
+        <LinearLayout
+            android:id="@+id/rating_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@color/grey"
+            android:paddingBottom="@dimen/spacing_half_large_28"
+            android:paddingTop="@dimen/spacing_half_large_28"
+            app:layout_anchor="@id/nested_scroll_view"
+            app:layout_behavior=".ui.view.behaviors.RatingBarBehavior">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    style="@style/score_layout"
+                    android:layout_weight="1">
+
+                    <TextView
+                        style="@style/score_text.count"
+                        android:text="@string/rating_number"/>
+
+                    <TextView
+                        style="@style/score_text"
+                        android:text="@string/rating"/>
+
+                </LinearLayout>
+
+                <View style="@style/separator_vertical"/>
+
+                <LinearLayout
+                    style="@style/score_layout"
+                    android:layout_weight="2">
+
+                    <TextView
+                        style="@style/score_text.count"
+                        android:text="@string/code_strings_number"/>
+
+                    <TextView
+                        style="@style/score_text"
+                        android:text="@string/code_strings"/>
+
+                </LinearLayout>
+
+                <View style="@style/separator_vertical"/>
+
+                <LinearLayout
+                    style="@style/score_layout"
+                    android:layout_weight="1">
+
+                    <TextView
+                        style="@style/score_text.count"
+                        android:text="@string/projects_number"/>
+
+                    <TextView
+                        style="@style/score_text"
+                        android:text="@string/projects"/>
+
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
