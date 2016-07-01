@@ -9,6 +9,7 @@
     <dimen name="size_large_72">72dp</dimen>
     <dimen name="line_size">2dp</dimen>
     <dimen name="profile_image_size">256dp</dimen>
+    <dimen name="max_rating_size">112dp</dimen>
 
     <!--Font sizes-->
     <dimen name="font_small_8">8sp</dimen>

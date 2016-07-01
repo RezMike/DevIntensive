@@ -45,223 +45,28 @@
             </android.support.design.widget.CollapsingToolbarLayout>
         </android.support.design.widget.AppBarLayout>
 
-        <android.support.v4.widget.NestedScrollView
-            android:id="@+id/nested_scroll_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <LinearLayout style="@style/item_layout">
-
-                    <ImageView
-                        style="@style/icon.left"
-                        android:src="@drawable/ic_call_grey_24dp"/>
-
-                    <LinearLayout style="@style/edit_text_layout">
-
-                        <android.support.design.widget.TextInputLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <EditText
-                                android:id="@+id/phone_et"
-                                style="@style/edit_text"
-                                android:hint="@string/phone_hint"
-                                android:inputType="phone"
-                                android:text="@string/phone_text"/>
-                        </android.support.design.widget.TextInputLayout>
-                    </LinearLayout>
-
-                    <ImageView
-                        android:id="@+id/call_img"
-                        style="@style/icon.right"
-                        android:src="@drawable/ic_phone_in_talk_grey_24dp"/>
-                </LinearLayout>
-
-                <View style="@style/separator_horizontal"/>
-
-                <LinearLayout style="@style/item_layout">
-
-                    <ImageView
-                        style="@style/icon.left"
-                        android:src="@drawable/ic_email_grey_24dp"/>
-
-                    <LinearLayout style="@style/edit_text_layout">
-
-                        <android.support.design.widget.TextInputLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <EditText
-                                android:id="@+id/email_et"
-                                style="@style/edit_text"
-                                android:hint="@string/email_hint"
-                                android:inputType="textEmailAddress"
-                                android:text="@string/email_text"/>
-                        </android.support.design.widget.TextInputLayout>
-                    </LinearLayout>
-
-                    <ImageView
-                        style="@style/icon.right"
-                        android:src="@drawable/ic_send_grey_24dp"/>
-                </LinearLayout>
-
-                <View style="@style/separator_horizontal"/>
-
-                <LinearLayout style="@style/item_layout">
-
-                    <ImageView
-                        style="@style/icon.left"
-                        android:src="@drawable/ic_vk_grey_24dp"/>
-
-                    <LinearLayout style="@style/edit_text_layout">
-
-                        <android.support.design.widget.TextInputLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <EditText
-                                android:id="@+id/vk_et"
-                                style="@style/edit_text"
-                                android:hint="@string/vk_hint"
-                                android:inputType="textWebEditText"
-                                android:text="@string/vk_text"/>
-                        </android.support.design.widget.TextInputLayout>
-                    </LinearLayout>
-
-                    <ImageView
-                        style="@style/icon.right"
-                        android:src="@drawable/ic_visibility_grey_24dp"/>
-                </LinearLayout>
-
-                <View style="@style/separator_horizontal"/>
-
-                <LinearLayout style="@style/item_layout">
-
-                    <ImageView
-                        style="@style/icon.left"
-                        android:src="@drawable/ic_repository_grey_24dp"/>
-
-                    <LinearLayout style="@style/edit_text_layout">
-
-                        <android.support.design.widget.TextInputLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <EditText
-                                android:id="@+id/git_et"
-                                style="@style/edit_text"
-                                android:hint="@string/repository_hint"
-                                android:inputType="textWebEditText"
-                                android:text="@string/repository_text"/>
-                        </android.support.design.widget.TextInputLayout>
-                    </LinearLayout>
-
-                    <ImageView
-                        style="@style/icon.right"
-                        android:src="@drawable/ic_visibility_grey_24dp"/>
-                </LinearLayout>
-
-                <View style="@style/separator_horizontal"/>
-
-                <LinearLayout style="@style/item_layout">
-
-                    <ImageView
-                        style="@style/icon.left"
-                        android:src="@drawable/ic_account_circle_grey_24dp"/>
-
-                    <LinearLayout
-                        style="@style/edit_text_layout"
-                        android:layout_height="wrap_content">
-
-                        <android.support.design.widget.TextInputLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <EditText
-                                android:id="@+id/bio_et"
-                                style="@style/edit_text"
-                                android:hint="@string/about_hint"
-                                android:text="@string/about_text"/>
-                        </android.support.design.widget.TextInputLayout>
-                    </LinearLayout>
-
-                    <ImageView
-                        style="@style/icon.right"
-                        android:src="@drawable/ic_visibility_grey_24dp"/>
-                </LinearLayout>
-            </LinearLayout>
-        </android.support.v4.widget.NestedScrollView>
-
         <LinearLayout
             android:id="@+id/rating_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
             android:background="@color/grey"
-            android:paddingBottom="@dimen/spacing_half_large_28"
-            android:paddingTop="@dimen/spacing_half_large_28"
-            app:layout_anchor="@id/nested_scroll_view"
+            android:gravity="center_vertical"
             app:layout_behavior=".ui.view.behaviors.RatingBarBehavior">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+            <include layout="@layout/activity_main_rating_layout"/>
 
-                <LinearLayout
-                    style="@style/score_layout"
-                    android:layout_weight="1">
-
-                    <TextView
-                        style="@style/score_text.count"
-                        android:text="@string/rating_number"/>
-
-                    <TextView
-                        style="@style/score_text"
-                        android:text="@string/rating"/>
-
-                </LinearLayout>
-
-                <View style="@style/separator_vertical"/>
-
-                <LinearLayout
-                    style="@style/score_layout"
-                    android:layout_weight="2">
-
-                    <TextView
-                        style="@style/score_text.count"
-                        android:text="@string/code_strings_number"/>
-
-                    <TextView
-                        style="@style/score_text"
-                        android:text="@string/code_strings"/>
-
-                </LinearLayout>
-
-                <View style="@style/separator_vertical"/>
-
-                <LinearLayout
-                    style="@style/score_layout"
-                    android:layout_weight="1">
-
-                    <TextView
-                        style="@style/score_text.count"
-                        android:text="@string/projects_number"/>
-
-                    <TextView
-                        style="@style/score_text"
-                        android:text="@string/projects"/>
-
-                </LinearLayout>
-            </LinearLayout>
         </LinearLayout>
+
+        <android.support.v4.widget.NestedScrollView
+            android:id="@+id/nested_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_anchor="@id/rating_layout"
+            app:layout_behavior=".ui.view.behaviors.NestedScrollViewBehavior">
+
+            <include layout="@layout/activity_main_info_layout"/>
+
+        </android.support.v4.widget.NestedScrollView>
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"
@@ -270,7 +75,7 @@
             android:layout_marginRight="@dimen/spacing_fab_right"
             android:src="@drawable/ic_create_white_24dp"
             app:layout_anchor="@id/appbar_layout"
-            app:layout_anchorGravity="bottom|right|"/>
+            app:layout_anchorGravity="bottom|right"/>
 
     </android.support.design.widget.CoordinatorLayout>
 

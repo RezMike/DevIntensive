@@ -2,18 +2,21 @@ package com.softdesign.devintensive.ui.view.behaviors;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.widget.NestedScrollView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import com.softdesign.devintensive.R;
+
 public class RatingBarBehavior extends CoordinatorLayout.Behavior<LinearLayout> {
     private Context mContext;
-    private float mMaxDependencyTop;
-    private float mChildPadding;
+    private float mMaxDependencyHeight;
+    private int mChildHeight;
 
     public RatingBarBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -21,25 +24,45 @@ public class RatingBarBehavior extends CoordinatorLayout.Behavior<LinearLayout> 
     }
 
     @Override
+    public Parcelable onSaveInstanceState(CoordinatorLayout parent, LinearLayout child) {
+        Bundle state = new Bundle();
+        state.putInt("childHeight", mChildHeight);
+        state.putFloat("maxDependencyHeight", mMaxDependencyHeight);
+        return state;
+    }
+
+    @Override
+    public void onRestoreInstanceState(CoordinatorLayout parent, LinearLayout child, Parcelable saveState) {
+        if (saveState instanceof Bundle) {
+            Bundle state = (Bundle)saveState;
+            mChildHeight = state.getInt("childHeight");
+            mMaxDependencyHeight = state.getFloat("maxDependencyHeight");
+        }
+    }
+
+    @Override
     public boolean layoutDependsOn(CoordinatorLayout parent, LinearLayout child, View dependency) {
-        return dependency instanceof NestedScrollView;
+        return dependency instanceof AppBarLayout;
     }
 
     @Override
     public boolean onDependentViewChanged(CoordinatorLayout parent, LinearLayout child, View dependency) {
-        Log.d("behavior", String.valueOf(dependency.getY()));
+        child.setY(dependency.getBottom());
+        float dependencyHeight = dependency.getBottom() - getActionBarHeight() - getStatusBarHeight();
 
-        if (mMaxDependencyTop == 0){
-            mMaxDependencyTop = dependency.getTop();
-            mChildPadding = child.getPaddingTop();
-            dependency.setPadding(0, child.getHeight(), 0, 0);
+        if (mChildHeight == 0) {
+            mMaxDependencyHeight = dependencyHeight;
         }
 
-        float minDependencyTop = getActionBarHeight() + getStatusBarHeight();
-        float diffPadding = (dependency.getTop() - minDependencyTop) / (mMaxDependencyTop - minDependencyTop);
-        int padding = (int) (mChildPadding * diffPadding);
-        child.setPadding(0, padding, 0, padding);
-        dependency.setPadding(0, child.getHeight(), 0, 0);
+        float minChildHeight = mContext.getResources().getDimensionPixelOffset(R.dimen.max_rating_size) / 2;
+        float diffHeight = dependencyHeight / mMaxDependencyHeight;
+
+        if (diffHeight > 1){
+            diffHeight = 1;
+        }
+
+        mChildHeight = (int) (minChildHeight + minChildHeight * diffHeight);
+        child.setMinimumHeight(mChildHeight);
 
         return true;
     }
