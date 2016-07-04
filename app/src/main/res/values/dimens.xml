@@ -8,10 +8,12 @@
     <dimen name="size_medium_56">56dp</dimen>
     <dimen name="size_large_72">72dp</dimen>
     <dimen name="line_size">2dp</dimen>
+    <dimen name="profile_image_size">256dp</dimen>
+    <dimen name="max_rating_size">112dp</dimen>
 
     <!--Font sizes-->
     <dimen name="font_small_8">8sp</dimen>
-    <dimen name="font_normal_12">12sp</dimen>
+    <dimen name="font_normal_14">14sp</dimen>
     <dimen name="font_medium_16">16sp</dimen>
     <dimen name="font_large_24">24sp</dimen>
 
@@ -32,4 +34,5 @@
     <dimen name="spacing_list_items">72dp</dimen>
     <dimen name="spacing_content_areas">8dp</dimen>
 
+    <dimen name="spacing_fab_right">16dp</dimen>
 </resources>
