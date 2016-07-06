@@ -7,7 +7,6 @@ import android.os.Parcelable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -54,7 +53,7 @@ public class RatingBarBehavior extends CoordinatorLayout.Behavior<LinearLayout> 
             mMaxDependencyHeight = dependencyHeight;
         }
 
-        float minChildHeight = mContext.getResources().getDimensionPixelOffset(R.dimen.max_rating_size) / 2;
+        float minChildHeight = mContext.getResources().getDimensionPixelOffset(R.dimen.max_rating_size_112) / 2;
         float diffHeight = dependencyHeight / mMaxDependencyHeight;
 
         if (diffHeight > 1){
