@@ -81,6 +81,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     @BindView(R.id.rating_layout)
     LinearLayout mRatingLayout;
 
+    @BindView(R.id.phone_et)
+    EditText mPhoneEt;
+
     @BindView(R.id.call_img)
     ImageView mCallImg;
     @BindView(R.id.send_img)
@@ -89,7 +92,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     ImageView mVkImg;
     @BindView(R.id.git_img)
     ImageView mGitImg;
-
 
     @BindViews({R.id.phone_et, R.id.email_et, R.id.vk_et, R.id.git_et, R.id.bio_et})
     List<EditText> mUserInfoViews;
@@ -341,6 +343,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private void changeEditMode(int mode) {
         if (mode == 1) {
             mFab.setImageResource(R.drawable.ic_done_white_24dp);
+            mPhoneEt.setFocusableInTouchMode(true);
 
             for (EditText userValue : mUserInfoViews) {
                 userValue.setEnabled(true);
