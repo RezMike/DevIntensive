@@ -53,4 +53,8 @@ public class PreferencesManager {
         return Uri.parse(mSharedPreferences.getString(ConstantManager.USER_PHOTO_KEY,
                         "android.resource://com.softdesign.devintensive/" + R.drawable.user_bg));
     }
+
+    public String getUserDataField(String field){
+        return mSharedPreferences.getString(field, "");
+    }
 }

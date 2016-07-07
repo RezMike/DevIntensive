@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.net.LinkAddress;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -61,8 +60,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     private int mCurrentEditMode = 0;
 
-    @BindView(R.id.call_img)
-    ImageView mCallImg;
     @BindView(R.id.main_coordinator_container)
     CoordinatorLayout mCoordinatorLayout;
     @BindView(R.id.toolbar)
@@ -84,6 +81,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     @BindView(R.id.rating_layout)
     LinearLayout mRatingLayout;
 
+    @BindView(R.id.call_img)
+    ImageView mCallImg;
+    @BindView(R.id.send_img)
+    ImageView mSendImg;
+    @BindView(R.id.vk_img)
+    ImageView mVkImg;
+    @BindView(R.id.git_img)
+    ImageView mGitImg;
+
+
     @BindViews({R.id.phone_et, R.id.email_et, R.id.vk_et, R.id.git_et, R.id.bio_et})
     List<EditText> mUserInfoViews;
 
@@ -103,6 +110,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
         mFab.setOnClickListener(this);
         mProfilePlaceholder.setOnClickListener(this);
+
+        mCallImg.setOnClickListener(this);
+        mSendImg.setOnClickListener(this);
+        mVkImg.setOnClickListener(this);
+        mGitImg.setOnClickListener(this);
 
         setupToolbar();
         setupDrawer();
@@ -193,6 +205,36 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 break;
             case R.id.profile_placeholder:
                 showDialog(ConstantManager.LOAD_PROFILE_PHOTO);
+                break;
+            case R.id.call_img:
+                String phoneNumber = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_PHONE_KEY);
+                if (!phoneNumber.equals("")){
+                    Intent mCallIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phoneNumber));
+                    startActivity(mCallIntent);
+                }
+                break;
+            case R.id.send_img:
+                String email = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_EMAIL_KEY);
+                if (!email.equals("")) {
+                    Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
+                    emailIntent.setType("plain/text");
+                    emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{email});
+                    startActivity(Intent.createChooser(emailIntent, getString(R.string.choose_email_client)));
+                }
+                break;
+            case R.id.vk_img:
+                String vkAddress = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_VK_KEY);
+                if (!vkAddress.equals("")){
+                    Intent mVkIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + vkAddress));
+                    startActivity(Intent.createChooser(mVkIntent, getString(R.string.choose_browser)));
+                }
+                break;
+            case R.id.git_img:
+                String gitAddress = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_GIT_KEY);
+                if (!gitAddress.equals("")){
+                    Intent mGitIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + gitAddress));
+                    startActivity(Intent.createChooser(mGitIntent, getString(R.string.choose_browser)));
+                }
                 break;
         }
     }
@@ -369,9 +411,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     Manifest.permission.CAMERA,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
             }, ConstantManager.CAMERA_PERMISSION_REQUEST_CODE);
-            Snackbar.make(mCoordinatorLayout, "Для корректной работы приложения необходимо дать требуемые разрешения!",
+            Snackbar.make(mCoordinatorLayout, R.string.give_permission,
                     Snackbar.LENGTH_LONG)
-                    .setAction("Разрешить", new View.OnClickListener() {
+                    .setAction(R.string.permit, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             openApplicationSettings();
@@ -384,10 +426,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == ConstantManager.CAMERA_PERMISSION_REQUEST_CODE && grantResults.length == 2){
             if (grantResults[0] == PackageManager.PERMISSION_DENIED){
-                showToast("Необходимо разрешение на работу с камерой!");
+                showToast(getString(R.string.need_camera_permission));
             }
             if (grantResults[1] == PackageManager.PERMISSION_DENIED) {
-                showToast("Необходимо разрешение на запись!");
+                showToast(getString(R.string.need_write_permission));
             }
         }
     }

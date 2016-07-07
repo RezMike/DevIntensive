@@ -36,5 +36,13 @@
     <string name="user_profile.dialog.cancel">Отмена</string>
     <string name="user_profile.choose_photo">Выберите фото</string>
 
+    <string name="give_permission">Для корректной работы приложения необходимо дать требуемые разрешения!</string>
+    <string name="need_camera_permission">Необходимо разрешение на работу с камерой!</string>
+    <string name="need_write_permission">Необходимо разрешение на запись!</string>
+    <string name="permit">Разрешить</string>
+
+    <string name="choose_email_client">Выберите e-mail клиент:</string>
+    <string name="choose_browser">Выберите браузер:</string>
+
     <string name="error_create_file">Ошибка создания файла</string>
 </resources>
