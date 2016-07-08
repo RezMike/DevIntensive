@@ -21,6 +21,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
@@ -38,6 +39,7 @@ import android.widget.RelativeLayout;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.ui.custom.EditTextWatcher;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.squareup.picasso.Picasso;
@@ -80,21 +82,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     ImageView mProfileImage;
     @BindView(R.id.rating_layout)
     LinearLayout mRatingLayout;
-
     @BindView(R.id.phone_et)
     EditText mPhoneEt;
 
-    @BindView(R.id.call_img)
-    ImageView mCallImg;
-    @BindView(R.id.send_img)
-    ImageView mSendImg;
-    @BindView(R.id.vk_img)
-    ImageView mVkImg;
-    @BindView(R.id.git_img)
-    ImageView mGitImg;
-
     @BindViews({R.id.phone_et, R.id.email_et, R.id.vk_et, R.id.git_et, R.id.bio_et})
     List<EditText> mUserInfoViews;
+    @BindViews({R.id.phone_img, R.id.email_img, R.id.vk_img, R.id.git_img})
+    List<ImageView> mUserInfoImages;
+    @BindViews({R.id.phone_et, R.id.email_et, R.id.vk_et, R.id.git_et})
+    List<EditText> mUserInfoEdits;
 
     private AppBarLayout.LayoutParams mAppBarParams = null;
 
@@ -113,10 +109,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mFab.setOnClickListener(this);
         mProfilePlaceholder.setOnClickListener(this);
 
-        mCallImg.setOnClickListener(this);
-        mSendImg.setOnClickListener(this);
-        mVkImg.setOnClickListener(this);
-        mGitImg.setOnClickListener(this);
+        for (ImageView imageView : mUserInfoImages){
+            imageView.setOnClickListener(this);
+        }
 
         setupToolbar();
         setupDrawer();
@@ -208,14 +203,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             case R.id.profile_placeholder:
                 showDialog(ConstantManager.LOAD_PROFILE_PHOTO);
                 break;
-            case R.id.call_img:
+            case R.id.phone_img:
                 String phoneNumber = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_PHONE_KEY);
                 if (!phoneNumber.equals("")){
                     Intent mCallIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phoneNumber));
                     startActivity(mCallIntent);
                 }
                 break;
-            case R.id.send_img:
+            case R.id.email_img:
                 String email = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_EMAIL_KEY);
                 if (!email.equals("")) {
                     Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
@@ -353,6 +348,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
             showProfilePlaceholder();
             lockToolbar();
+            showEtErrors();
             mCollapsingToolbar.setExpandedTitleColor(Color.TRANSPARENT);
         } else {
             mFab.setImageResource(R.drawable.ic_create_white_24dp);
@@ -365,6 +361,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
             hideProfilePlaceholder();
             unlockToolbar();
+            hideEtErrors();
             mCollapsingToolbar.setExpandedTitleColor(getResources().getColor(R.color.white));
 
             saveUserInfoValue();
@@ -485,5 +482,26 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private void openApplicationSettings(){
         Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
         startActivityForResult(appSettingsIntent, ConstantManager.PERMISSION_REQUEST_SETTINGS_CODE);
+    }
+
+    private void hideEtErrors(){
+        for (int i = 0; i < mUserInfoEdits.size(); ++i){
+            EditText editText = mUserInfoEdits.get(i);
+            editText.addTextChangedListener(null);
+            ((TextInputLayout)editText.getParent()).setError(null);
+        }
+    }
+
+    private void showEtErrors(){
+        for (int i = 0; i < mUserInfoEdits.size(); ++i){
+            mUserInfoEdits.get(i).addTextChangedListener(
+                    new EditTextWatcher(
+                            this,
+                            mUserInfoEdits.get(i),
+                            mUserInfoImages.get(i),
+                            (TextInputLayout)mUserInfoEdits.get(i).getParent()
+                    )
+            );
+        }
     }
 }

@@ -28,7 +28,7 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/call_img"
+            android:id="@+id/phone_img"
             style="@style/icon.right"
             android:src="@drawable/ic_phone_in_talk_grey_24dp"/>
     </LinearLayout>
@@ -57,7 +57,7 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/send_img"
+            android:id="@+id/email_img"
             style="@style/icon.right"
             android:src="@drawable/ic_send_grey_24dp"/>
     </LinearLayout>
