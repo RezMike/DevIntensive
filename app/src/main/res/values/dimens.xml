@@ -12,7 +12,8 @@
     <dimen name="font_small_8">8sp</dimen>
     <dimen name="font_normal_14">14sp</dimen>
     <dimen name="font_medium_16">16sp</dimen>
-    <dimen name="font_large_24">24sp</dimen>
+    <dimen name="font_large_20">20sp</dimen>
+    <dimen name="font_larger_24">24sp</dimen>
 
     <!--Spaces-->
     <dimen name="spacing_small_8">8dp</dimen>
@@ -37,5 +38,7 @@
     <dimen name="profile_image_size_256">256dp</dimen>
     <dimen name="max_rating_size_112">112dp</dimen>
     <dimen name="placeholder_photo_size_90">90dp</dimen>
+    <dimen name="login_button_width_124">124dp</dimen>
+    <dimen name="login_button_height_36">36dp</dimen>
 
 </resources>
