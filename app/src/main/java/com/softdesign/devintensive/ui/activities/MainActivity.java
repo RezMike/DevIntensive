@@ -97,6 +97,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private File mPhotoFile = null;
     private Uri mSelectedImage = null;
 
+    private List<EditTextWatcher> mTextWatchers;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -490,11 +492,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             editText.addTextChangedListener(null);
             ((TextInputLayout)editText.getParent()).setError(null);
         }
+        mTextWatchers = null;
     }
 
     private void showEtErrors(){
+        mTextWatchers = new ArrayList<>();
         for (int i = 0; i < mUserInfoEdits.size(); ++i){
-            mUserInfoEdits.get(i).addTextChangedListener(
+            mTextWatchers.add(i,
                     new EditTextWatcher(
                             this,
                             mUserInfoEdits.get(i),
@@ -502,6 +506,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                             (TextInputLayout)mUserInfoEdits.get(i).getParent()
                     )
             );
+            mUserInfoEdits.get(i).addTextChangedListener(mTextWatchers.get(i));
+
         }
     }
 }
