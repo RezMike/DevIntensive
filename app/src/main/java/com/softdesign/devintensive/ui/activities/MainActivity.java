@@ -489,8 +489,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private void hideEtErrors(){
         for (int i = 0; i < mUserInfoEdits.size(); ++i){
             EditText editText = mUserInfoEdits.get(i);
-            editText.addTextChangedListener(null);
+            if (mTextWatchers != null)
+                editText.removeTextChangedListener(mTextWatchers.get(i));
             ((TextInputLayout)editText.getParent()).setError(null);
+            ((TextInputLayout)editText.getParent()).setErrorEnabled(false);
         }
         mTextWatchers = null;
     }
@@ -507,7 +509,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     )
             );
             mUserInfoEdits.get(i).addTextChangedListener(mTextWatchers.get(i));
-
         }
     }
 }
