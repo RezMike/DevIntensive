@@ -44,8 +44,8 @@
                         android:id="@+id/profile_placeholder"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:visibility="gone"
-                        android:background="@color/grey_background">
+                        android:background="@color/grey_background"
+                        android:visibility="gone">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -61,10 +61,10 @@
                             android:id="@+id/photo_placeholder"
                             android:layout_width="@dimen/placeholder_photo_size_90"
                             android:layout_height="@dimen/placeholder_photo_size_90"
-                            android:layout_centerHorizontal="true"
-                            android:scaleType="centerCrop"
                             android:layout_alignParentBottom="true"
+                            android:layout_centerHorizontal="true"
                             android:layout_marginBottom="@dimen/spacing_large_56"
+                            android:scaleType="centerCrop"
                             android:src="@drawable/add_a_photo_white_48px"/>
                     </RelativeLayout>
 
@@ -86,7 +86,8 @@
             android:layout_height="wrap_content"
             android:background="@color/grey"
             android:gravity="center_vertical"
-            app:layout_behavior=".ui.view.behaviors.RatingBarBehavior">
+            app:behavior_min_height="@dimen/size_medium_56"
+            app:layout_behavior=".ui.behaviors.RatingBarBehavior">
 
             <include layout="@layout/activity_main_rating_layout"/>
 
@@ -96,8 +97,7 @@
             android:id="@+id/nested_scroll_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_anchor="@id/rating_layout"
-            app:layout_behavior=".ui.view.behaviors.NestedScrollViewBehavior">
+            app:layout_behavior=".ui.behaviors.NestedScrollViewBehavior">
 
             <include layout="@layout/activity_main_info_layout"/>
 

@@ -36,7 +36,7 @@
     <!--Custom sizes-->
     <dimen name="line_size_2">2dp</dimen>
     <dimen name="profile_image_size_256">256dp</dimen>
-    <dimen name="max_rating_size_112">112dp</dimen>
+    <dimen name="user_info_size_112">112dp</dimen>
     <dimen name="placeholder_photo_size_90">90dp</dimen>
     <dimen name="login_button_width_124">124dp</dimen>
     <dimen name="login_button_height_36">36dp</dimen>
