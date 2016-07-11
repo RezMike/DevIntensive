@@ -24,9 +24,6 @@
         voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
         non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     </string>
-    <string name="enter_caps">ВОЙТИ</string>
-    <string name="password_hint">Пароль</string>
-    <string name="forget_password">Забыли пароль?</string>
 
     <string name="name">Резниченко Михаил</string>
     <string name="my_profile">Мой профиль</string>
@@ -46,6 +43,11 @@
 
     <string name="choose_email_client">Выберите e-mail клиент:</string>
     <string name="choose_browser">Выберите браузер:</string>
+
+    <string name="auth_enter">Войти</string>
+    <string name="auth_email_hint">E-mail</string>
+    <string name="auth_password_hint">Пароль</string>
+    <string name="auth_remember">Забыли пароль?</string>
 
     <string name="error_create_file">Ошибка создания файла</string>
     <string name="error_phone_et">Номер телефона должен содержать 11-20 символов</string>
