@@ -7,15 +7,13 @@
     <dimen name="size_small_24">24dp</dimen>
     <dimen name="size_medium_56">56dp</dimen>
     <dimen name="size_large_72">72dp</dimen>
-    <dimen name="line_size">2dp</dimen>
-    <dimen name="profile_image_size">256dp</dimen>
-    <dimen name="max_rating_size">112dp</dimen>
 
     <!--Font sizes-->
     <dimen name="font_small_8">8sp</dimen>
     <dimen name="font_normal_14">14sp</dimen>
     <dimen name="font_medium_16">16sp</dimen>
-    <dimen name="font_large_24">24sp</dimen>
+    <dimen name="font_large_20">20sp</dimen>
+    <dimen name="font_larger_24">24sp</dimen>
 
     <!--Spaces-->
     <dimen name="spacing_small_8">8dp</dimen>
@@ -33,6 +31,14 @@
     <dimen name="spacing_title">72dp</dimen>
     <dimen name="spacing_list_items">72dp</dimen>
     <dimen name="spacing_content_areas">8dp</dimen>
-
     <dimen name="spacing_fab_right">16dp</dimen>
+
+    <!--Custom sizes-->
+    <dimen name="line_size_2">2dp</dimen>
+    <dimen name="profile_image_size_256">256dp</dimen>
+    <dimen name="user_info_size_112">112dp</dimen>
+    <dimen name="placeholder_photo_size_90">90dp</dimen>
+    <dimen name="login_button_width_124">124dp</dimen>
+    <dimen name="login_button_height_36">36dp</dimen>
+
 </resources>

@@ -27,13 +27,48 @@
                 app:contentScrim="@color/color_primary"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-                <ImageView
-                    android:id="@+id/user_photo_img"
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/profile_image_size"
-                    android:fitsSystemWindows="true"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/header_bg"/>
+                    android:layout_height="@dimen/profile_image_size_256"
+                    android:fitsSystemWindows="true">
+
+                    <ImageView
+                        android:id="@+id/user_photo_img"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/profile_image_size_256"
+                        android:fitsSystemWindows="true"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/user_bg"/>
+
+                    <RelativeLayout
+                        android:id="@+id/profile_placeholder"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/grey_background"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_above="@+id/photo_placeholder"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginBottom="@dimen/spacing_small_8"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="@string/image_placeholder"
+                            android:textColor="@color/white"/>
+
+                        <ImageView
+                            android:id="@+id/photo_placeholder"
+                            android:layout_width="@dimen/placeholder_photo_size_90"
+                            android:layout_height="@dimen/placeholder_photo_size_90"
+                            android:layout_alignParentBottom="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginBottom="@dimen/spacing_large_56"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/add_a_photo_white_48px"/>
+                    </RelativeLayout>
+
+                </FrameLayout>
 
                 <android.support.v7.widget.Toolbar
                     android:id="@+id/toolbar"
@@ -51,7 +86,8 @@
             android:layout_height="wrap_content"
             android:background="@color/grey"
             android:gravity="center_vertical"
-            app:layout_behavior=".ui.view.behaviors.RatingBarBehavior">
+            app:behavior_min_height="@dimen/size_medium_56"
+            app:layout_behavior=".ui.behaviors.RatingBarBehavior">
 
             <include layout="@layout/activity_main_rating_layout"/>
 
@@ -61,8 +97,7 @@
             android:id="@+id/nested_scroll_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_anchor="@id/rating_layout"
-            app:layout_behavior=".ui.view.behaviors.NestedScrollViewBehavior">
+            app:layout_behavior=".ui.behaviors.NestedScrollViewBehavior">
 
             <include layout="@layout/activity_main_info_layout"/>
 

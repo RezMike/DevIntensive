@@ -28,7 +28,7 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/call_img"
+            android:id="@+id/phone_img"
             style="@style/icon.right"
             android:src="@drawable/ic_phone_in_talk_grey_24dp"/>
     </LinearLayout>
@@ -57,6 +57,7 @@
         </LinearLayout>
 
         <ImageView
+            android:id="@+id/email_img"
             style="@style/icon.right"
             android:src="@drawable/ic_send_grey_24dp"/>
     </LinearLayout>
@@ -85,6 +86,7 @@
         </LinearLayout>
 
         <ImageView
+            android:id="@+id/vk_img"
             style="@style/icon.right"
             android:src="@drawable/ic_visibility_grey_24dp"/>
     </LinearLayout>
@@ -113,6 +115,7 @@
         </LinearLayout>
 
         <ImageView
+            android:id="@+id/git_img"
             style="@style/icon.right"
             android:src="@drawable/ic_visibility_grey_24dp"/>
     </LinearLayout>
@@ -137,6 +140,7 @@
                     android:id="@+id/bio_et"
                     style="@style/edit_text"
                     android:hint="@string/about_hint"
+                    android:inputType="textMultiLine"
                     android:text="@string/about_text"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
