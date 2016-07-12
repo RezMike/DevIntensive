@@ -82,7 +82,13 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
         mDataManager.getPreferencesManager().saveUserId(userModel.getData().getUser().getId());
         saveUserValues(userModel);
         saveUserFields(userModel);
+        mDataManager.getPreferencesManager().saveUserName(userModel.getData().getUser().getSecondName()
+                + " " + userModel.getData().getUser().getFirstName());
         mDataManager.getPreferencesManager().saveLoginEmail(mLoginEt.getText().toString());
+        mDataManager.getPreferencesManager().saveUserPhoto(
+                Uri.parse(userModel.getData().getUser().getPublicInfo().getPhoto()));
+        mDataManager.getPreferencesManager().saveUserAvatar(
+                Uri.parse(userModel.getData().getUser().getPublicInfo().getAvatar()));
 
         Intent loginIntent = new Intent(this, MainActivity.class);
         startActivity(loginIntent);
@@ -103,9 +109,9 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
                     if (response.code() == 200) {
                         loginSuccess(response.body());
                     } else if (response.code() == 404) {
-                        showSnackbar("Неверный логин или пароль");
+                        showSnackbar(getString(R.string.error_wrong_login_or_password));
                     } else {
-                        showSnackbar("Все пропало, Шеф!!!");
+                        showSnackbar(getString(R.string.error_all_bad));
                     }
                 }
 
@@ -115,7 +121,7 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
                 }
             });
         } else {
-            showSnackbar("Сеть на данный момент не доступна, попробуйте позже");
+            showSnackbar(getString(R.string.error_network_not_available));
         }
     }
 

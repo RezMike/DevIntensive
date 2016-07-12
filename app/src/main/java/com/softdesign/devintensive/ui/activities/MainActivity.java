@@ -211,14 +211,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 showDialog(ConstantManager.LOAD_PROFILE_PHOTO);
                 break;
             case R.id.phone_img:
-                String phoneNumber = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_PHONE_KEY);
+                String phoneNumber = mDataManager.getPreferencesManager().getUserProfileField(ConstantManager.USER_PHONE_KEY);
                 if (!phoneNumber.equals("")){
                     Intent mCallIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phoneNumber));
                     startActivity(mCallIntent);
                 }
                 break;
             case R.id.email_img:
-                String email = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_EMAIL_KEY);
+                String email = mDataManager.getPreferencesManager().getUserProfileField(ConstantManager.USER_EMAIL_KEY);
                 if (!email.equals("")) {
                     Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
                     emailIntent.setType("plain/text");
@@ -227,14 +227,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 }
                 break;
             case R.id.vk_img:
-                String vkAddress = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_VK_KEY);
+                String vkAddress = mDataManager.getPreferencesManager().getUserProfileField(ConstantManager.USER_VK_KEY);
                 if (!vkAddress.equals("")){
                     Intent mVkIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + vkAddress));
                     startActivity(Intent.createChooser(mVkIntent, getString(R.string.choose_browser)));
                 }
                 break;
             case R.id.git_img:
-                String gitAddress = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_GIT_KEY);
+                String gitAddress = mDataManager.getPreferencesManager().getUserProfileField(ConstantManager.USER_GIT_KEY);
                 if (!gitAddress.equals("")){
                     Intent mGitIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + gitAddress));
                     startActivity(Intent.createChooser(mGitIntent, getString(R.string.choose_browser)));
@@ -318,6 +318,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void setupDrawer() {
+        View headerLayout = mNavigationView.getHeaderView(0);
+        TextView userName = (TextView) headerLayout.findViewById(R.id.user_name_txt);
+        TextView userEmail = (TextView) headerLayout.findViewById(R.id.user_email_txt);
+        userName.setText(mDataManager.getPreferencesManager().getUserName());
+        userEmail.setText(mDataManager.getPreferencesManager().getEmail());
+
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {

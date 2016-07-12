@@ -11,8 +11,7 @@
 
         <TextView
             android:id="@+id/user_info_rating"
-            style="@style/score_text.count"
-            android:text="@string/rating_number"/>
+            style="@style/score_text.count"/>
 
         <TextView
             style="@style/score_text"
@@ -28,8 +27,7 @@
 
         <TextView
             android:id="@+id/user_info_lines"
-            style="@style/score_text.count"
-            android:text="@string/code_strings_number"/>
+            style="@style/score_text.count"/>
 
         <TextView
             style="@style/score_text"
@@ -45,8 +43,7 @@
 
         <TextView
             android:id="@+id/user_info_projects"
-            style="@style/score_text.count"
-            android:text="@string/projects_number"/>
+            style="@style/score_text.count"/>
 
         <TextView
             style="@style/score_text"
