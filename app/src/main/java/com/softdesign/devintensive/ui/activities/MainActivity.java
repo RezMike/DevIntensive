@@ -45,6 +45,7 @@ import com.softdesign.devintensive.data.network.responses.UploadPhotoRes;
 import com.softdesign.devintensive.ui.custom.EditTextWatcher;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -135,6 +136,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
         Picasso.with(this)
                 .load(mDataManager.getPreferencesManager().loadUserPhoto())
+                .memoryPolicy(MemoryPolicy.NO_CACHE)
                 .into(mProfileImage);
         mCollapsingToolbar.setTitle(mDataManager.getPreferencesManager().getUserName());
 
