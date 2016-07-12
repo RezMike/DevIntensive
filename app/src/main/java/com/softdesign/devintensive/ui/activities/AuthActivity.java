@@ -14,6 +14,7 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.requests.UserLoginReq;
 import com.softdesign.devintensive.data.network.responses.UserModelRes;
+import com.softdesign.devintensive.data.network.responses.UserRes;
 import com.softdesign.devintensive.utils.NetworkStatusChecker;
 
 import java.util.Arrays;
@@ -49,6 +50,8 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
 
         mDataManager = DataManager.getInstance();
 
+        signInByToken();
+
         mSignInBtn.setOnClickListener(this);
         mRememberPassword.setOnClickListener(this);
 
@@ -77,70 +80,90 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
         startActivity(rememberIntent);
     }
 
-    private void loginSuccess(UserModelRes userModel){
-        mDataManager.getPreferencesManager().saveAuthToken(userModel.getData().getToken());
-        mDataManager.getPreferencesManager().saveUserId(userModel.getData().getUser().getId());
-        saveUserValues(userModel);
-        saveUserFields(userModel);
-        mDataManager.getPreferencesManager().saveUserName(userModel.getData().getUser().getSecondName()
-                + " " + userModel.getData().getUser().getFirstName());
-        mDataManager.getPreferencesManager().saveLoginEmail(mLoginEt.getText().toString());
+    private void loginSuccess(UserRes.Data data){
+        //mDataManager.getPreferencesManager().saveAuthToken(userModel.getData().getToken());
+        mDataManager.getPreferencesManager().saveUserId(data.getId());
+        saveUserValues(data);
+        saveUserFields(data);
+        mDataManager.getPreferencesManager().saveUserName(data.getSecondName()
+                + " " + data.getFirstName());
         mDataManager.getPreferencesManager().saveUserPhoto(
-                Uri.parse(userModel.getData().getUser().getPublicInfo().getPhoto()));
+                Uri.parse(data.getPublicInfo().getPhoto()));
         mDataManager.getPreferencesManager().saveUserAvatar(
-                Uri.parse(userModel.getData().getUser().getPublicInfo().getAvatar()));
+                Uri.parse(data.getPublicInfo().getAvatar()));
+
+        mDataManager.getPreferencesManager().saveLoginEmail(mLoginEt.getText().toString());
 
         Intent loginIntent = new Intent(this, MainActivity.class);
         startActivity(loginIntent);
-        AuthActivity.this.finish();
     }
 
-    private void signIn(){
+    private void signInByToken(){
         if (NetworkStatusChecker.isNetworkAvailable(this)) {
-            Call<UserModelRes> call = mDataManager.loginUser(
-                    new UserLoginReq(
-                            mLoginEt.getText().toString(),
-                            mPasswordEt.getText().toString()
-                    )
-            );
-            call.enqueue(new Callback<UserModelRes>() {
-                @Override
-                public void onResponse(Call<UserModelRes> call, Response<UserModelRes> response) {
-                    if (response.code() == 200) {
-                        loginSuccess(response.body());
-                    } else if (response.code() == 404) {
-                        showSnackbar(getString(R.string.error_wrong_login_or_password));
-                    } else {
-                        showSnackbar(getString(R.string.error_all_bad));
+            if (!mDataManager.getPreferencesManager().getAuthToken().equals("")) {
+                Call<UserRes> call = mDataManager.loginToken(mDataManager.getPreferencesManager().getUserId());
+                call.enqueue(new Callback<UserRes>() {
+                    @Override
+                    public void onResponse(Call<UserRes> call, Response<UserRes> response) {
+                        if (response.code() == 200) {
+                            loginSuccess(response.body().getData());
+                        }
                     }
-                }
 
-                @Override
-                public void onFailure(Call<UserModelRes> call, Throwable t) {
-                    //// TODO: 12.07.2016 обработать ошибки
-                }
-            });
+                    @Override
+                    public void onFailure(Call<UserRes> call, Throwable t) {
+                        //// TODO: 12.07.2016 обработать ошибки
+                    }
+                });
+            }
         } else {
             showSnackbar(getString(R.string.error_network_not_available));
         }
     }
 
-    private void saveUserValues(UserModelRes userModel){
+    private void signIn(){
+        Call<UserModelRes> call = mDataManager.loginUser(
+                new UserLoginReq(
+                        mLoginEt.getText().toString(),
+                        mPasswordEt.getText().toString()
+                )
+        );
+        call.enqueue(new Callback<UserModelRes>() {
+            @Override
+            public void onResponse(Call<UserModelRes> call, Response<UserModelRes> response) {
+                if (response.code() == 200) {
+                    mDataManager.getPreferencesManager().saveAuthToken(response.body().getData().getToken());
+                    loginSuccess(response.body().getData().getUser());
+                } else if (response.code() == 404) {
+                    showSnackbar(getString(R.string.error_wrong_login_or_password));
+                } else {
+                    showSnackbar(getString(R.string.error_all_bad));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserModelRes> call, Throwable t) {
+                //// TODO: 12.07.2016 обработать ошибки
+            }
+        });
+    }
+
+    private void saveUserValues(UserRes.Data data){
         int[] userValues = {
-                userModel.getData().getUser().getProfileValues().getRating(),
-                userModel.getData().getUser().getProfileValues().getLinesCode(),
-                userModel.getData().getUser().getProfileValues().getProjects(),
+                data.getProfileValues().getRating(),
+                data.getProfileValues().getLinesCode(),
+                data.getProfileValues().getProjects()
         };
         mDataManager.getPreferencesManager().saveUserProfileValues(userValues);
     }
 
-    private void saveUserFields(UserModelRes userModel) {
+    private void saveUserFields(UserRes.Data data) {
         String[] userFields = {
-                userModel.getData().getUser().getContacts().getPhone(),
-                userModel.getData().getUser().getContacts().getEmail(),
-                userModel.getData().getUser().getContacts().getVk(),
-                userModel.getData().getUser().getRepositories().getRepo().get(0).getGit(),
-                userModel.getData().getUser().getPublicInfo().getBio()
+                data.getContacts().getPhone(),
+                data.getContacts().getEmail(),
+                data.getContacts().getVk(),
+                data.getRepositories().getRepo().get(0).getGit(),
+                data.getPublicInfo().getBio()
         };
         mDataManager.getPreferencesManager().saveUserProfileFields(Arrays.asList(userFields));
     }
