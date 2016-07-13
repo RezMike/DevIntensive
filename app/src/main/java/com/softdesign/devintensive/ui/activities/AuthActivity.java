@@ -1,0 +1,170 @@
+package com.softdesign.devintensive.ui.activities;
+
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import com.softdesign.devintensive.R;
+import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.network.requests.UserLoginReq;
+import com.softdesign.devintensive.data.network.responses.UserModelRes;
+import com.softdesign.devintensive.data.network.responses.UserRes;
+import com.softdesign.devintensive.utils.NetworkStatusChecker;
+
+import java.util.Arrays;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class AuthActivity extends BaseActivity implements View.OnClickListener{
+
+    private DataManager mDataManager;
+
+    @BindView(R.id.main_coordinator_container)
+    CoordinatorLayout mCoordinatorLayout;
+    @BindView(R.id.login_btn)
+    Button mSignInBtn;
+    @BindView(R.id.login_email)
+    EditText mLoginEt;
+    @BindView(R.id.login_password)
+    EditText mPasswordEt;
+    @BindView(R.id.remember_tv)
+    TextView mRememberPassword;
+    @BindView(R.id.login_indicator)
+    View mIndicator;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_auth);
+        ButterKnife.bind(this);
+
+        mDataManager = DataManager.getInstance();
+
+        signInByToken();
+
+        mSignInBtn.setOnClickListener(this);
+        mRememberPassword.setOnClickListener(this);
+
+        mLoginEt.setText(mDataManager.getPreferencesManager().getLoginEmail());
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.login_btn:
+                signIn();
+                break;
+            case R.id.remember_tv:
+                rememberPassword();
+                break;
+        }
+    }
+
+    private void showSnackbar(String massage){
+        Snackbar.make(mCoordinatorLayout, massage, Snackbar.LENGTH_LONG).show();
+    }
+
+    private void rememberPassword(){
+        Intent rememberIntent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("http://devintensive.softdesign-apps.ru/forgotpass"));
+        startActivity(rememberIntent);
+    }
+
+    private void loginSuccess(UserRes.Data data){
+        //mDataManager.getPreferencesManager().saveAuthToken(userModel.getData().getToken());
+        mDataManager.getPreferencesManager().saveUserId(data.getId());
+        saveUserValues(data);
+        saveUserFields(data);
+        mDataManager.getPreferencesManager().saveUserName(data.getSecondName()
+                + " " + data.getFirstName());
+        mDataManager.getPreferencesManager().saveUserPhoto(
+                Uri.parse(data.getPublicInfo().getPhoto()));
+        mDataManager.getPreferencesManager().saveUserAvatar(
+                Uri.parse(data.getPublicInfo().getAvatar()));
+
+        mDataManager.getPreferencesManager().saveLoginEmail(mLoginEt.getText().toString());
+
+        Intent loginIntent = new Intent(this, MainActivity.class);
+        startActivity(loginIntent);
+    }
+
+    private void signInByToken(){
+        if (NetworkStatusChecker.isNetworkAvailable(this)) {
+            if (!mDataManager.getPreferencesManager().getAuthToken().equals("")) {
+                Call<UserRes> call = mDataManager.loginToken(mDataManager.getPreferencesManager().getUserId());
+                call.enqueue(new Callback<UserRes>() {
+                    @Override
+                    public void onResponse(Call<UserRes> call, Response<UserRes> response) {
+                        if (response.code() == 200) {
+                            loginSuccess(response.body().getData());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<UserRes> call, Throwable t) {
+                        //// TODO: 12.07.2016 обработать ошибки
+                    }
+                });
+            }
+        } else {
+            showSnackbar(getString(R.string.error_network_not_available));
+        }
+    }
+
+    private void signIn(){
+        Call<UserModelRes> call = mDataManager.loginUser(
+                new UserLoginReq(
+                        mLoginEt.getText().toString(),
+                        mPasswordEt.getText().toString()
+                )
+        );
+        call.enqueue(new Callback<UserModelRes>() {
+            @Override
+            public void onResponse(Call<UserModelRes> call, Response<UserModelRes> response) {
+                if (response.code() == 200) {
+                    mDataManager.getPreferencesManager().saveAuthToken(response.body().getData().getToken());
+                    loginSuccess(response.body().getData().getUser());
+                } else if (response.code() == 404) {
+                    showSnackbar(getString(R.string.error_wrong_login_or_password));
+                } else {
+                    showSnackbar(getString(R.string.error_all_bad));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserModelRes> call, Throwable t) {
+                //// TODO: 12.07.2016 обработать ошибки
+            }
+        });
+    }
+
+    private void saveUserValues(UserRes.Data data){
+        int[] userValues = {
+                data.getProfileValues().getRating(),
+                data.getProfileValues().getLinesCode(),
+                data.getProfileValues().getProjects()
+        };
+        mDataManager.getPreferencesManager().saveUserProfileValues(userValues);
+    }
+
+    private void saveUserFields(UserRes.Data data) {
+        String[] userFields = {
+                data.getContacts().getPhone(),
+                data.getContacts().getEmail(),
+                data.getContacts().getVk(),
+                data.getRepositories().getRepo().get(0).getGit(),
+                data.getPublicInfo().getBio()
+        };
+        mDataManager.getPreferencesManager().saveUserProfileFields(Arrays.asList(userFields));
+    }
+}

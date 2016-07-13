@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -36,12 +37,15 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.network.responses.UploadPhotoRes;
 import com.softdesign.devintensive.ui.custom.EditTextWatcher;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -54,6 +58,13 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.BindViews;
 import butterknife.ButterKnife;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener {
     private static final String TAG = ConstantManager.TAG_PREFIX + "MainActivity";
@@ -85,6 +96,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     @BindView(R.id.phone_et)
     EditText mPhoneEt;
 
+    @BindViews({R.id.user_info_rating, R.id.user_info_lines, R.id.user_info_projects})
+    List<TextView> mUserValueViews;
     @BindViews({R.id.phone_et, R.id.email_et, R.id.vk_et, R.id.git_et, R.id.bio_et})
     List<EditText> mUserInfoViews;
     @BindViews({R.id.phone_img, R.id.email_img, R.id.vk_img, R.id.git_img})
@@ -118,10 +131,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         setupToolbar();
         setupDrawer();
         setRoundedAvatar();
-        loadUserInfoValue();
+        initUserFields();
+        initUserInfoValues();
+
         Picasso.with(this)
                 .load(mDataManager.getPreferencesManager().loadUserPhoto())
+                .memoryPolicy(MemoryPolicy.NO_CACHE)
                 .into(mProfileImage);
+        mCollapsingToolbar.setTitle(mDataManager.getPreferencesManager().getUserName());
 
         if (savedInstanceState == null) {
             //активити запускается впервые
@@ -148,7 +165,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "OnPause");
-        saveUserInfoValue();
+        saveUserFields();
     }
 
     @Override
@@ -206,14 +223,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 showDialog(ConstantManager.LOAD_PROFILE_PHOTO);
                 break;
             case R.id.phone_img:
-                String phoneNumber = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_PHONE_KEY);
+                String phoneNumber = mDataManager.getPreferencesManager().getUserProfileField(ConstantManager.USER_PHONE_KEY);
                 if (!phoneNumber.equals("")){
                     Intent mCallIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phoneNumber));
                     startActivity(mCallIntent);
                 }
                 break;
             case R.id.email_img:
-                String email = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_EMAIL_KEY);
+                String email = mDataManager.getPreferencesManager().getUserProfileField(ConstantManager.USER_EMAIL_KEY);
                 if (!email.equals("")) {
                     Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
                     emailIntent.setType("plain/text");
@@ -222,14 +239,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 }
                 break;
             case R.id.vk_img:
-                String vkAddress = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_VK_KEY);
+                String vkAddress = mDataManager.getPreferencesManager().getUserProfileField(ConstantManager.USER_VK_KEY);
                 if (!vkAddress.equals("")){
                     Intent mVkIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + vkAddress));
                     startActivity(Intent.createChooser(mVkIntent, getString(R.string.choose_browser)));
                 }
                 break;
             case R.id.git_img:
-                String gitAddress = mDataManager.getPreferencesManager().getUserDataField(ConstantManager.USER_GIT_KEY);
+                String gitAddress = mDataManager.getPreferencesManager().getUserProfileField(ConstantManager.USER_GIT_KEY);
                 if (!gitAddress.equals("")){
                     Intent mGitIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + gitAddress));
                     startActivity(Intent.createChooser(mGitIntent, getString(R.string.choose_browser)));
@@ -251,12 +268,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 if (resultCode == RESULT_OK && data != null){
                     mSelectedImage = data.getData();
                     insertProfileImage(mSelectedImage);
+                    uploadPhoto(getFileFromUri(mSelectedImage));
                 }
                 break;
             case ConstantManager.REQUEST_CAMERA_PICTURE:
                 if (resultCode == RESULT_OK && mPhotoFile != null){
                     mSelectedImage = Uri.fromFile(mPhotoFile);
                     insertProfileImage(mSelectedImage);
+                    uploadPhoto(mPhotoFile);
                 }
                 break;
         }
@@ -313,6 +332,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void setupDrawer() {
+        View headerLayout = mNavigationView.getHeaderView(0);
+        TextView userName = (TextView) headerLayout.findViewById(R.id.user_name_txt);
+        TextView userEmail = (TextView) headerLayout.findViewById(R.id.user_email_txt);
+        userName.setText(mDataManager.getPreferencesManager().getUserName());
+        userEmail.setText(mDataManager.getPreferencesManager().getEmail());
+
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
@@ -366,23 +391,30 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             hideEtErrors();
             mCollapsingToolbar.setExpandedTitleColor(getResources().getColor(R.color.white));
 
-            saveUserInfoValue();
+            saveUserFields();
         }
     }
 
-    private void loadUserInfoValue() {
-        List<String> userData = mDataManager.getPreferencesManager().loadUserProfileData();
-        for (int i = 0; i < userData.size(); ++i) {
-            mUserInfoViews.get(i).setText(userData.get(i));
+    private void initUserFields() {
+        List<String> userFields = mDataManager.getPreferencesManager().loadUserProfileFields();
+        for (int i = 0; i < userFields.size(); ++i) {
+            mUserInfoViews.get(i).setText(userFields.get(i));
         }
     }
 
-    private void saveUserInfoValue() {
-        List<String> userData = new ArrayList<>();
+    private void saveUserFields() {
+        List<String> userFields = new ArrayList<>();
         for (EditText userField : mUserInfoViews) {
-            userData.add(userField.getText().toString());
+            userFields.add(userField.getText().toString());
         }
-        mDataManager.getPreferencesManager().saveUserProfileData(userData);
+        mDataManager.getPreferencesManager().saveUserProfileFields(userFields);
+    }
+
+    private void initUserInfoValues(){
+        List<String> userValues = mDataManager.getPreferencesManager().loadUserProfileValues();
+        for (int i = 0; i < userValues.size(); ++i) {
+            mUserValueViews.get(i).setText(userValues.get(i));
+        }
     }
 
     private void loadPhotoFromGallery() {
@@ -422,6 +454,52 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                         }
                     }).show();
         }
+    }
+
+    private void uploadPhoto(File file){
+        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
+        Call<UploadPhotoRes> call = mDataManager.getRestService().uploadPhoto(
+                mDataManager.getPreferencesManager().getUserId(), body);
+        call.enqueue(new Callback<UploadPhotoRes>() {
+            @Override
+            public void onResponse(Call<UploadPhotoRes> call, Response<UploadPhotoRes> response) {
+                //// TODO: 13.07.2016 реализовать получение колбека
+            }
+
+            @Override
+            public void onFailure(Call<UploadPhotoRes> call, Throwable t) {
+                //// TODO: 13.07.2016 реализовать получение ошибки
+            }
+        });
+    }
+
+    private void uploadAvatar(File file){
+        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
+        Call<UploadPhotoRes> call = mDataManager.getRestService().uploadPhoto(
+                mDataManager.getPreferencesManager().getUserId(), body);
+        call.enqueue(new Callback<UploadPhotoRes>() {
+            @Override
+            public void onResponse(Call<UploadPhotoRes> call, Response<UploadPhotoRes> response) {
+                //// TODO: 13.07.2016 реализовать получение колбека
+            }
+
+            @Override
+            public void onFailure(Call<UploadPhotoRes> call, Throwable t) {
+                //// TODO: 13.07.2016 реализовать получение ошибки
+            }
+        });
+    }
+
+    private File getFileFromUri(Uri uri){
+        String[] filePathColumn = { MediaStore.Images.Media.DATA };
+        Cursor cursor = this.getContentResolver().query(uri, filePathColumn, null, null, null);
+        cursor.moveToFirst();
+        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+        String filePath = cursor.getString(columnIndex);
+        cursor.close();
+        return new File(filePath);
     }
 
     @Override

@@ -22,8 +22,7 @@
                     android:id="@+id/phone_et"
                     style="@style/edit_text"
                     android:hint="@string/phone_hint"
-                    android:inputType="phone"
-                    android:text="@string/phone_text"/>
+                    android:inputType="phone"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
 
@@ -51,8 +50,7 @@
                     android:id="@+id/email_et"
                     style="@style/edit_text"
                     android:hint="@string/email_hint"
-                    android:inputType="textEmailAddress"
-                    android:text="@string/email_text"/>
+                    android:inputType="textEmailAddress"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
 
@@ -80,8 +78,7 @@
                     android:id="@+id/vk_et"
                     style="@style/edit_text"
                     android:hint="@string/vk_hint"
-                    android:inputType="textWebEditText"
-                    android:text="@string/vk_text"/>
+                    android:inputType="textWebEditText"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
 
@@ -109,8 +106,7 @@
                     android:id="@+id/git_et"
                     style="@style/edit_text"
                     android:hint="@string/repository_hint"
-                    android:inputType="textWebEditText"
-                    android:text="@string/repository_text"/>
+                    android:inputType="textWebEditText"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
 
@@ -140,8 +136,7 @@
                     android:id="@+id/bio_et"
                     style="@style/edit_text"
                     android:hint="@string/about_hint"
-                    android:inputType="textMultiLine"
-                    android:text="@string/about_text"/>
+                    android:inputType="textMultiLine"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
 
