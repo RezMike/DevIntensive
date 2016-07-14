@@ -11,8 +11,9 @@ import retrofit2.http.Path;
 
 import com.softdesign.devintensive.data.network.requests.UserLoginReq;
 import com.softdesign.devintensive.data.network.responses.UploadPhotoRes;
+import com.softdesign.devintensive.data.network.responses.UserListRes;
 import com.softdesign.devintensive.data.network.responses.UserModelRes;
-import com.softdesign.devintensive.data.network.responses.UserRes;
+import com.softdesign.devintensive.data.network.responses.UserInfoRes;
 
 public interface RestService {
 
@@ -20,7 +21,10 @@ public interface RestService {
     Call<UserModelRes> loginUser(@Body UserLoginReq req);
 
     @GET("user/{userId}")
-    Call<UserRes> loginToken(@Path("userId") String userId);
+    Call<UserInfoRes> loginToken(@Path("userId") String userId);
+
+    @GET("user/list?orderBy=rating")
+    Call<UserListRes> getUserList();
 
     @Multipart
     @POST("user/{userId}/publicValues/profilePhoto")

@@ -61,7 +61,6 @@ import butterknife.ButterKnife;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -482,7 +481,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         call.enqueue(new Callback<UploadPhotoRes>() {
             @Override
             public void onResponse(Call<UploadPhotoRes> call, Response<UploadPhotoRes> response) {
-                //// TODO: 13.07.2016 реализовать получение колбека
+                if (response.code() == 404) {
+                    Intent loginIntent = new Intent(MainActivity.this, AuthActivity.class);
+                    startActivity(loginIntent);
+                    MainActivity.this.finish();
+                }
             }
 
             @Override

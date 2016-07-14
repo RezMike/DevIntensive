@@ -20,6 +20,8 @@ public interface ConstantManager {
     String USER_PROJECT_VALUE = "USER_PROJECT_VALUE";
     String USER_LOGIN_EMAIL = "USER_LOGIN_EMAIL";
 
+    String PARCELABLE_KEY = "PARCELABLE_KEY";
+
     int LOAD_PROFILE_PHOTO = 1;
     int REQUEST_CAMERA_PICTURE = 100;
     int REQUEST_GALLERY_PICTURE = 101;

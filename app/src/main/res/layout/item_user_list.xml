@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/spacing_small_8"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.softdesign.devintensive.ui.views.AspectRatioImageView
+                android:id="@+id/user_photo_img"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scaleType="centerCrop"
+                android:src="@drawable/user_bg"
+                app:aspect_ratio="1.73"/>
+
+            <TextView
+                android:id="@+id/user_full_name_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:fontFamily="sans-serif-medium"
+                android:paddingBottom="@dimen/spacing_medial_24"
+                android:paddingLeft="@dimen/spacing_normal_16"
+                android:paddingRight="@dimen/spacing_normal_16"
+                android:text="Фамилия имя"
+                android:textColor="@color/white"
+                android:textSize="@dimen/font_large_24"/>
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_large_72"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/user_rating_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="0"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/font_medium_20"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-regular"
+                    android:text="@string/rating"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/font_normal_14"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/user_code_lines_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="0"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/font_medium_20"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-regular"
+                    android:text="@string/code_lines"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/font_normal_14"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/user_projects_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="0"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/font_medium_20"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-regular"
+                    android:text="@string/projects"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/font_normal_14"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/user_bio_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-regular"
+            android:maxLines="3"
+            android:paddingLeft="@dimen/spacing_normal_16"
+            android:paddingRight="@dimen/spacing_normal_16"
+            android:text="asdfa;sdlfkjas;ldfkj"
+            android:textColor="@color/grey_light"
+            android:textSize="@dimen/font_normal_14"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="@dimen/spacing_small_8"
+            android:layout_marginTop="@dimen/spacing_normal_16"
+            android:background="@color/black"/>
+
+        <Button
+            android:id="@+id/more_info_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/review"
+            android:textColor="@color/color_accent"
+            android:paddingLeft="@dimen/spacing_normal_16"
+            android:paddingRight="@dimen/spacing_normal_16"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+    </LinearLayout>
+</android.support.v7.widget.CardView>

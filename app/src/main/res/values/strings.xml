@@ -2,7 +2,7 @@
     <string name="app_name">Резниченко Михаил</string>
 
     <string name="rating">Рейтинг</string>
-    <string name="code_strings">Написано строк кода</string>
+    <string name="code_lines">Написано строк кода</string>
     <string name="projects">Проектов</string>
 
     <string name="phone_hint">Мобильный</string>
@@ -10,6 +10,7 @@
     <string name="vk_hint">Профиль в VK</string>
     <string name="repository_hint">Репозиторий</string>
     <string name="about_hint">О себе</string>
+    <string name="review">Просмотр</string>
 
     <string name="my_profile">Мой профиль</string>
     <string name="team">Команда</string>
@@ -41,5 +42,5 @@
     <string name="error_git_et">Введите адрес в формате github.com/xxx</string>
     <string name="error_network_not_available">Сеть на данный момент не доступна, попробуйте позже</string>
     <string name="error_wrong_login_or_password">Неверный логин или пароль</string>
-    <string name="error_all_bad">Все пропало, Шеф!!!</string>
+    <string name="error_all_bad">Что-то пошло не так!</string>
 </resources>

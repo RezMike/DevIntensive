@@ -3,12 +3,16 @@
           package="com.softdesign.devintensive">
 
     <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-feature android:name="android.hardware.camera2" android:required="false"/>
-    <uses-feature android:name="android.hardware.camera2.autofocus" android:required="false"/>
+
+    <uses-feature
+        android:name="android.hardware.camera2"
+        android:required="false"/>
+    <uses-feature
+        android:name="android.hardware.camera2.autofocus"
+        android:required="false"/>
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
@@ -19,7 +23,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ui.activities.AuthActivity"
+        <activity
+            android:name=".ui.activities.AuthActivity"
             android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -28,6 +33,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.activities.MainActivity"/>
+        <activity android:name=".ui.activities.UserListActivity"/>
     </application>
 
 </manifest>

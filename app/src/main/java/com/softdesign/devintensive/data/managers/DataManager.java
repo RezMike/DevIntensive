@@ -6,8 +6,9 @@ import com.softdesign.devintensive.data.network.RestService;
 import com.softdesign.devintensive.data.network.ServiceGenerator;
 import com.softdesign.devintensive.data.network.requests.UserLoginReq;
 import com.softdesign.devintensive.data.network.responses.UploadPhotoRes;
+import com.softdesign.devintensive.data.network.responses.UserListRes;
 import com.softdesign.devintensive.data.network.responses.UserModelRes;
-import com.softdesign.devintensive.data.network.responses.UserRes;
+import com.softdesign.devintensive.data.network.responses.UserInfoRes;
 import com.softdesign.devintensive.utils.DevintensiveApplication;
 
 import okhttp3.MultipartBody;
@@ -51,8 +52,12 @@ public class DataManager {
         return mRestService.loginUser(userLoginReq);
     }
 
-    public Call<UserRes> loginToken(String userId){
+    public Call<UserInfoRes> loginToken(String userId){
         return mRestService.loginToken(userId);
+    }
+
+    public Call<UserListRes> getUserList(){
+        return mRestService.getUserList();
     }
 
     public Call<UploadPhotoRes> uploadPhoto(String userId, MultipartBody.Part file){

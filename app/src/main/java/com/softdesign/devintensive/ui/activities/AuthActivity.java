@@ -14,7 +14,7 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.requests.UserLoginReq;
 import com.softdesign.devintensive.data.network.responses.UserModelRes;
-import com.softdesign.devintensive.data.network.responses.UserRes;
+import com.softdesign.devintensive.data.network.responses.UserInfoRes;
 import com.softdesign.devintensive.utils.NetworkStatusChecker;
 
 import java.util.Arrays;
@@ -80,13 +80,11 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
         startActivity(rememberIntent);
     }
 
-    private void loginSuccess(UserRes.Data data){
-        //mDataManager.getPreferencesManager().saveAuthToken(userModel.getData().getToken());
+    private void loginSuccess(UserInfoRes.Data data){
         mDataManager.getPreferencesManager().saveUserId(data.getId());
         saveUserValues(data);
         saveUserFields(data);
-        mDataManager.getPreferencesManager().saveUserName(data.getSecondName()
-                + " " + data.getFirstName());
+        mDataManager.getPreferencesManager().saveUserName(data.getFullName());
         mDataManager.getPreferencesManager().saveUserPhoto(
                 Uri.parse(data.getPublicInfo().getPhoto()));
         mDataManager.getPreferencesManager().saveUserAvatar(
@@ -101,17 +99,17 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
     private void signInByToken(){
         if (NetworkStatusChecker.isNetworkAvailable(this)) {
             if (!mDataManager.getPreferencesManager().getAuthToken().equals("")) {
-                Call<UserRes> call = mDataManager.loginToken(mDataManager.getPreferencesManager().getUserId());
-                call.enqueue(new Callback<UserRes>() {
+                Call<UserInfoRes> call = mDataManager.loginToken(mDataManager.getPreferencesManager().getUserId());
+                call.enqueue(new Callback<UserInfoRes>() {
                     @Override
-                    public void onResponse(Call<UserRes> call, Response<UserRes> response) {
+                    public void onResponse(Call<UserInfoRes> call, Response<UserInfoRes> response) {
                         if (response.code() == 200) {
                             loginSuccess(response.body().getData());
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<UserRes> call, Throwable t) {
+                    public void onFailure(Call<UserInfoRes> call, Throwable t) {
                         //// TODO: 12.07.2016 обработать ошибки
                     }
                 });
@@ -148,7 +146,7 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
         });
     }
 
-    private void saveUserValues(UserRes.Data data){
+    private void saveUserValues(UserInfoRes.Data data){
         int[] userValues = {
                 data.getProfileValues().getRating(),
                 data.getProfileValues().getLinesCode(),
@@ -157,7 +155,7 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
         mDataManager.getPreferencesManager().saveUserProfileValues(userValues);
     }
 
-    private void saveUserFields(UserRes.Data data) {
+    private void saveUserFields(UserInfoRes.Data data) {
         String[] userFields = {
                 data.getContacts().getPhone(),
                 data.getContacts().getEmail(),

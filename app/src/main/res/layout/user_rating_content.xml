@@ -31,7 +31,7 @@
 
         <TextView
             style="@style/score_text"
-            android:text="@string/code_strings"/>
+            android:text="@string/code_lines"/>
 
     </LinearLayout>
 
