@@ -1,14 +1,19 @@
 package com.softdesign.devintensive.ui.activities;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -74,9 +79,21 @@ public class ProfileUserActivity extends BaseActivity {
         mRepoListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //// TODO: 15.07.2016 реализовать просмотр репозитория
+                String gitAddress = (String)repositoriesAdapter.getItem(position);
+                if (gitAddress.contains("http://")){
+                    gitAddress = gitAddress.replaceAll("http://", "");
+                }
+                if (gitAddress.contains("https://")){
+                    gitAddress = gitAddress.replaceAll("https://", "");
+                }
+                if (!gitAddress.equals("")){
+                    Intent mGitIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + gitAddress));
+                    startActivity(Intent.createChooser(mGitIntent, getString(R.string.choose_browser)));
+                }
             }
         });
+
+        Log.d("", 76 + "");
 
         mUserBio.setText(userDTO.getBio());
         mUserRating.setText(userDTO.getRating());
@@ -93,5 +110,24 @@ public class ProfileUserActivity extends BaseActivity {
                     .error(R.drawable.user_bg)
                     .into(mProfileImage);
         }
+
+        setMaxHeightOfListView(mRepoListView);
+    }
+
+    public static void setMaxHeightOfListView(ListView listView) {
+        ListAdapter adapter = listView.getAdapter();
+
+        View view = adapter.getView(0, null, listView);
+        view.measure(
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        );
+
+        int totalHeight = view.getMeasuredHeight() * adapter.getCount();
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + listView.getDividerHeight() * (adapter.getCount() - 1);
+        listView.setLayoutParams(params);
+        listView.requestLayout();
     }
 }

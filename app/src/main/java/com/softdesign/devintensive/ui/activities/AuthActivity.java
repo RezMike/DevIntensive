@@ -99,10 +99,12 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
     private void signInByToken(){
         if (NetworkStatusChecker.isNetworkAvailable(this)) {
             if (!mDataManager.getPreferencesManager().getAuthToken().equals("")) {
+                showProgress();
                 Call<UserInfoRes> call = mDataManager.loginToken(mDataManager.getPreferencesManager().getUserId());
                 call.enqueue(new Callback<UserInfoRes>() {
                     @Override
                     public void onResponse(Call<UserInfoRes> call, Response<UserInfoRes> response) {
+                        hideProgress();
                         if (response.code() == 200) {
                             loginSuccess(response.body().getData());
                         }
@@ -120,6 +122,7 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
     }
 
     private void signIn(){
+        showProgress();
         Call<UserModelRes> call = mDataManager.loginUser(
                 new UserLoginReq(
                         mLoginEt.getText().toString(),
@@ -129,6 +132,7 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
         call.enqueue(new Callback<UserModelRes>() {
             @Override
             public void onResponse(Call<UserModelRes> call, Response<UserModelRes> response) {
+                hideProgress();
                 if (response.code() == 200) {
                     mDataManager.getPreferencesManager().saveAuthToken(response.body().getData().getToken());
                     loginSuccess(response.body().getData().getUser());

@@ -1,6 +1,7 @@
 package com.softdesign.devintensive.ui.activities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -129,7 +130,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
         setupToolbar();
         setupDrawer();
-        setRoundedAvatar();
         initUserFields();
         initUserInfoValues();
 
@@ -337,13 +337,26 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         userName.setText(mDataManager.getPreferencesManager().getUserName());
         userEmail.setText(mDataManager.getPreferencesManager().getEmail());
 
+        setRoundedAvatar();
+
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
-                showSnackBar(item.getTitle().toString());
-                item.setChecked(true);
-                mNavigationDrawer.closeDrawer(GravityCompat.START);
-                return false;
+                switch (item.getItemId()){
+                    case R.id.team_menu:
+                        Intent profileIntent = new Intent(MainActivity.this, UserListActivity.class);
+                        startActivity(profileIntent);
+                        mNavigationDrawer.closeDrawer(GravityCompat.START);
+                        break;
+                    case R.id.user_profile_menu:
+                        mNavigationDrawer.closeDrawer(GravityCompat.START);
+                        break;
+                    case R.id.exit_menu:
+                        mDataManager.getPreferencesManager().saveAuthToken("");
+                        Intent exitIntent = new Intent(MainActivity.this, AuthActivity.class);
+                        startActivity(exitIntent);
+                }
+                return true;
             }
         });
     }

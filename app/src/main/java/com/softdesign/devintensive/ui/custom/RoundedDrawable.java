@@ -11,7 +11,9 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 
-public class RoundedDrawable extends Drawable {
+import com.squareup.picasso.Transformation;
+
+public class RoundedDrawable extends Drawable implements Transformation{
 
     private final Bitmap mBitmap;
     private final Paint mPaint;
@@ -92,5 +94,15 @@ public class RoundedDrawable extends Drawable {
 
     public Bitmap getBitmap() {
         return mBitmap;
+    }
+
+    @Override
+    public Bitmap transform(Bitmap source) {
+        return mBitmap;
+    }
+
+    @Override
+    public String key() {
+        return "RoundedDrawable";
     }
 }

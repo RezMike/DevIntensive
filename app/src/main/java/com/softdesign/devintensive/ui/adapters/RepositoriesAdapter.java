@@ -1,6 +1,7 @@
 package com.softdesign.devintensive.ui.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,14 +13,12 @@ import com.softdesign.devintensive.R;
 import java.util.List;
 
 public class RepositoriesAdapter extends BaseAdapter {
-    private Context mContext;
     private List<String> mRepoList;
     private LayoutInflater mInflater;
 
     public RepositoriesAdapter(Context context, List<String> repoList) {
-        mContext = context;
         mRepoList = repoList;
-        mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override

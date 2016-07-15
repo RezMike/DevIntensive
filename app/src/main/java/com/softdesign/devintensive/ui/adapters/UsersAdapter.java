@@ -5,24 +5,35 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.network.responses.UserListRes;
+import com.softdesign.devintensive.ui.custom.CustomClickListener;
 import com.softdesign.devintensive.ui.views.AspectRatioImageView;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> {
+public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> implements Filterable{
     Context mContext;
     List<UserListRes.Data> mUsers;
-    UserViewHolder.CustomClickListener mCustomClickListener;
+    List<UserListRes.Data> mFilteredUsers;
+    CustomClickListener mCustomClickListener;
+    UserFilter mFilter;
 
-    public UsersAdapter(List<UserListRes.Data> users, UserViewHolder.CustomClickListener customClickListener) {
+    public UsersAdapter(List<UserListRes.Data> users, CustomClickListener customClickListener) {
         mUsers = users;
+        mFilteredUsers = new ArrayList<>();
+        mFilteredUsers.addAll(users);
         mCustomClickListener = customClickListener;
+        mFilter = new UserFilter(UsersAdapter.this);
     }
 
     @Override
@@ -34,14 +45,19 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     @Override
     public void onBindViewHolder(UserViewHolder holder, int position) {
-        UserListRes.Data user = mUsers.get(position);
+        UserListRes.Data user = mFilteredUsers.get(position);
 
         String photoPath = user.getPublicInfo().getPhoto();
         if (!photoPath.isEmpty()) {
+            WindowManager manager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
+            int width = manager.getDefaultDisplay().getWidth();
             Picasso.with(mContext)
                     .load(photoPath)
-                    .placeholder(mContext.getResources().getDrawable(R.drawable.user_bg))
-                    .error(mContext.getResources().getDrawable(R.drawable.user_bg))
+                    .memoryPolicy(MemoryPolicy.NO_CACHE)
+                    .resize(width, (int)(width/1.78))
+                    .centerCrop()
+                    .placeholder(R.drawable.user_bg)
+                    .error(R.drawable.user_bg)
                     .into(holder.userPhoto);
         }
 
@@ -60,11 +76,15 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     @Override
     public int getItemCount() {
-        return mUsers.size();
+        return mFilteredUsers.size();
     }
 
-    public static class UserViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    @Override
+    public Filter getFilter() {
+        return mFilter;
+    }
 
+    public class UserViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         protected AspectRatioImageView userPhoto;
         protected TextView mFullName, mRating, mCodeLines, mProjects, mBio;
         protected Button mShowMore;
@@ -89,12 +109,57 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         @Override
         public void onClick(View v) {
             if (mListener != null){
-                mListener.onUserItemClickListener(getAdapterPosition());
+                mListener.onUserItemClickListener(mUsers.indexOf(mFilteredUsers.get(getAdapterPosition())));
             }
         }
+    }
 
-        public interface CustomClickListener {
-            void onUserItemClickListener(int position);
+    public List<UserListRes.Data> getUsers() {
+        return mUsers;
+    }
+
+    public List<UserListRes.Data> getFilteredUsers() {
+        return mFilteredUsers;
+    }
+
+    public void setUsers(List<UserListRes.Data> users) {
+        mUsers = users;
+    }
+
+    public void setFilteredUsers(List<UserListRes.Data> filteredUsers) {
+        mFilteredUsers = filteredUsers;
+    }
+
+    public class UserFilter extends Filter{
+        private UsersAdapter mAdapter;
+
+        public UserFilter(UsersAdapter adapter) {
+            super();
+            mAdapter = adapter;
+        }
+
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            mFilteredUsers.clear();
+            final FilterResults results = new FilterResults();
+            if (constraint.length() == 0) {
+                mFilteredUsers.addAll(mUsers);
+            } else {
+                final String filterPattern = constraint.toString().toLowerCase().trim();
+                for (final UserListRes.Data user : mUsers) {
+                    if (user.getFullName().toLowerCase().startsWith(filterPattern)) {
+                        mFilteredUsers.add(user);
+                    }
+                }
+            }
+            results.values = mFilteredUsers;
+            results.count = mFilteredUsers.size();
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            mAdapter.notifyDataSetChanged();
         }
     }
 }

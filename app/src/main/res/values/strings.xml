@@ -14,6 +14,7 @@
 
     <string name="my_profile">Мой профиль</string>
     <string name="team">Команда</string>
+    <string name="exit">Выход</string>
 
     <string name="image_placeholder">Изменить фотографию профиля</string>
     <string name="user_profile.dialog.title">Изменить фотографию профиля</string>
