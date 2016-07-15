@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout style="@style/item_layout">
+
+        <ImageView
+            style="@style/icon.left"
+            android:src="@drawable/ic_repository_grey_24dp"/>
+
+        <ListView
+            android:id="@+id/repositories_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/spacing_medium_32"/>
+
+        <ImageView
+            android:id="@+id/git_img"
+            style="@style/icon.right"
+            android:src="@drawable/ic_visibility_grey_24dp"/>
+    </LinearLayout>
+
+    <View style="@style/separator_horizontal"/>
+
+    <LinearLayout style="@style/item_layout">
+
+        <ImageView
+            style="@style/icon.left"
+            android:src="@drawable/ic_account_circle_grey_24dp"/>
+
+        <LinearLayout
+            style="@style/edit_text_layout"
+            android:layout_height="wrap_content">
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/bio_et"
+                    style="@style/edit_text"
+                    android:hint="@string/about_hint"
+                    android:inputType="textMultiLine"/>
+            </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
+
+        <ImageView
+            style="@style/icon.right"
+            android:src="@drawable/ic_visibility_grey_24dp"/>
+    </LinearLayout>
+</LinearLayout>

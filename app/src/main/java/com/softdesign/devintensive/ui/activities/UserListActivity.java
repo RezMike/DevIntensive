@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.responses.UserListRes;
+import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.utils.ConstantManager;
 
@@ -62,22 +63,22 @@ public class UserListActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home){
+        if (item.getItemId() == android.R.id.home) {
             mNavigationDrawer.openDrawer(GravityCompat.START);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void showSnackBar(String massage){
+    private void showSnackBar(String massage) {
         Snackbar.make(mCoordinatorLayout, massage, Snackbar.LENGTH_LONG).show();
     }
 
-    private void setupToolbar(){
+    private void setupToolbar() {
         setSupportActionBar(mToolbar);
         ActionBar actionBar = getSupportActionBar();
 
-        if (actionBar != null){
+        if (actionBar != null) {
             actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
@@ -93,7 +94,7 @@ public class UserListActivity extends AppCompatActivity {
         call.enqueue(new Callback<UserListRes>() {
             @Override
             public void onResponse(Call<UserListRes> call, final Response<UserListRes> response) {
-                if (response.code() == 404){
+                if (response.code() == 404) {
                     Intent loginIntent = new Intent(UserListActivity.this, AuthActivity.class);
                     startActivity(loginIntent);
                     UserListActivity.this.finish();
@@ -103,7 +104,10 @@ public class UserListActivity extends AppCompatActivity {
                     mUsersAdapter = new UsersAdapter(mUsers, new UsersAdapter.UserViewHolder.CustomClickListener() {
                         @Override
                         public void onUserItemClickListener(int position) {
-                            showSnackBar("Пользователь с индексом " + position);
+                            UserDTO userDTO = new UserDTO(mUsers.get(position));
+                            Intent profileIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
+                            profileIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
+                            startActivity(profileIntent);
                         }
                     });
                     mRecyclerView.setAdapter(mUsersAdapter);
