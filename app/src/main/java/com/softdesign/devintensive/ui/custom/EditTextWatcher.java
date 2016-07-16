@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class EditTextWatcher implements TextWatcher {
-    private static final String phonePattern = "^\\d{11,20}$";
+    private static final String phonePattern = "^\\+\\d \\(\\d{3}\\) \\d{3}\\-\\d{2}\\-\\d{2}$";
     private static final String emailPattern = "^[\\w\\.\\-]{3,}@[A-Za-z0-9\\-]{2,}\\.[A-Za-z]{2,3}$";
     private static final String vkPattern = "^vk\\.com\\/\\w{3,}$";
     private static final String gitPattern = "^github\\.com\\/.{3,}$";
@@ -38,17 +38,17 @@ public class EditTextWatcher implements TextWatcher {
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
         String str = s.toString().toLowerCase();
-        if (str.contains("http://")){
+        if (str.contains("http://")) {
             mEditText.setText(str.replace("http://", ""));
         }
-        if (str.contains("https://")){
+        if (str.contains("https://")) {
             mEditText.setText(str.replace("https://", ""));
         }
     }
 
     @Override
     public void afterTextChanged(Editable s) {
-        switch (mEditText.getId()){
+        switch (mEditText.getId()) {
             case R.id.phone_et:
                 checkInputString(
                         phonePattern,
@@ -80,10 +80,10 @@ public class EditTextWatcher implements TextWatcher {
         }
     }
 
-    private void checkInputString(String patternString, String inputString, String error){
+    private void checkInputString(String patternString, String inputString, String error) {
         Pattern pattern = Pattern.compile(patternString);
         Matcher matcher = pattern.matcher(inputString);
-        if (matcher.matches()){
+        if (matcher.matches()) {
             mButton.setEnabled(true);
             mLayout.setError("");
             mLayout.setErrorEnabled(false);
