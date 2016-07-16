@@ -46,6 +46,7 @@ import com.softdesign.devintensive.data.network.responses.UploadPhotoRes;
 import com.softdesign.devintensive.ui.custom.EditTextWatcher;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.NetworkStatusChecker;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
@@ -136,6 +137,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         Picasso.with(this)
                 .load(mDataManager.getPreferencesManager().loadUserPhoto())
                 .memoryPolicy(MemoryPolicy.NO_CACHE)
+                .placeholder(R.drawable.user_bg)
+                .error(R.drawable.user_bg)
                 .into(mProfileImage);
         mCollapsingToolbar.setTitle(mDataManager.getPreferencesManager().getUserName());
 
@@ -476,12 +479,23 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         call.enqueue(new Callback<UploadPhotoRes>() {
             @Override
             public void onResponse(Call<UploadPhotoRes> call, Response<UploadPhotoRes> response) {
-                //// TODO: 13.07.2016 реализовать получение колбека
+                if (response.code() == 404) {
+                    Intent loginIntent = new Intent(MainActivity.this, AuthActivity.class);
+                    startActivity(loginIntent);
+                    MainActivity.this.finish();
+                } else if (response.code() == 200){
+                    showSnackBar(getString(R.string.photo_uploaded_successfully));
+                }
             }
 
             @Override
             public void onFailure(Call<UploadPhotoRes> call, Throwable t) {
-                //// TODO: 13.07.2016 реализовать получение ошибки
+                hideProgress();
+                if (!NetworkStatusChecker.isNetworkAvailable(MainActivity.this)) {
+                    showSnackBar(getString(R.string.error_network_not_available));
+                } else {
+                    showSnackBar(getString(R.string.error_all_bad));
+                }
             }
         });
     }
@@ -498,12 +512,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     Intent loginIntent = new Intent(MainActivity.this, AuthActivity.class);
                     startActivity(loginIntent);
                     MainActivity.this.finish();
+                } else if (response.code() == 200){
+                    showSnackBar(getString(R.string.photo_uploaded_successfully));
                 }
             }
 
             @Override
             public void onFailure(Call<UploadPhotoRes> call, Throwable t) {
-                //// TODO: 13.07.2016 реализовать получение ошибки
+                hideProgress();
+                if (!NetworkStatusChecker.isNetworkAvailable(MainActivity.this)) {
+                    showSnackBar(getString(R.string.error_network_not_available));
+                } else {
+                    showSnackBar(getString(R.string.error_all_bad));
+                }
             }
         });
     }

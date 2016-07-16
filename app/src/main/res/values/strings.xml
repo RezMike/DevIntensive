@@ -23,6 +23,7 @@
     <string name="user_profile.dialog.cancel">Отмена</string>
     <string name="user_profile.choose_photo">Выберите фото</string>
 
+    <string name="photo_uploaded_successfully">Фотография успешно загружена на сервер</string>
     <string name="give_permission">Для корректной работы приложения необходимо дать требуемые разрешения!</string>
     <string name="need_camera_permission">Необходимо разрешение на работу с камерой!</string>
     <string name="need_write_permission">Необходимо разрешение на запись!</string>

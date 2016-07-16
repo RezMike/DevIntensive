@@ -33,6 +33,7 @@ import com.softdesign.devintensive.ui.custom.CustomClickListener;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
 import com.softdesign.devintensive.ui.fragments.UsersRetainedFragment;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.NetworkStatusChecker;
 
 import java.util.List;
 
@@ -80,8 +81,10 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mRetainedFragment.setUsers(mUsersAdapter.getUsers());
-        mRetainedFragment.setFilteredUsers(mUsersAdapter.getFilteredUsers());
+        if (mUsersAdapter != null && mRetainedFragment != null) {
+            mRetainedFragment.setUsers(mUsersAdapter.getUsers());
+            mRetainedFragment.setFilteredUsers(mUsersAdapter.getFilteredUsers());
+        }
     }
 
     @Override
@@ -104,15 +107,17 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        mUsersAdapter.getFilter().filter(query);
-        Log.d("DEV ", "submit");
+        if (mUsersAdapter != null) {
+            mUsersAdapter.getFilter().filter(query);
+        }
         return true;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        mUsersAdapter.getFilter().filter(newText);
-        Log.d("DEV ", "change");
+        if (mUsersAdapter != null) {
+            mUsersAdapter.getFilter().filter(newText);
+        }
         return true;
     }
 
@@ -205,15 +210,20 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
 
             @Override
             public void onFailure(Call<UserListRes> call, Throwable t) {
-                // TODO: 15.07.2016 обработать ошибки
+                hideProgress();
+                if (!NetworkStatusChecker.isNetworkAvailable(UserListActivity.this)) {
+                    showSnackBar(getString(R.string.error_network_not_available));
+                } else {
+                    showSnackBar(getString(R.string.error_all_bad));
+                }
             }
         });
     }
 
-    private void initUsersData(){
+    private void initUsersData() {
         FragmentManager fm = getFragmentManager();
         mRetainedFragment = (UsersRetainedFragment) fm.findFragmentByTag("users_data");
-        if (mRetainedFragment == null){
+        if (mRetainedFragment == null) {
             mRetainedFragment = new UsersRetainedFragment();
             fm.beginTransaction().add(mRetainedFragment, "users_data").commit();
             loadUsersData();
