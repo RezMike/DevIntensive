@@ -3,13 +3,13 @@ package com.softdesign.devintensive.ui.fragments;
 import android.os.Bundle;
 import android.app.Fragment;
 
-import com.softdesign.devintensive.data.network.responses.UserListRes;
-
 import java.util.List;
 
+import com.softdesign.devintensive.data.storage.models.User;
+
 public class UsersRetainedFragment extends Fragment {
-    private List<UserListRes.Data> mUsers;
-    private List<UserListRes.Data> mFilteredUsers;
+    private List<User> mUsers;
+    private List<User> mFilteredUsers;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -17,19 +17,19 @@ public class UsersRetainedFragment extends Fragment {
         setRetainInstance(true);
     }
 
-    public void setUsers(List<UserListRes.Data> users) {
+    public void setUsers(List<User> users) {
         mUsers = users;
     }
 
-    public void setFilteredUsers(List<UserListRes.Data> filteredUsers){
+    public void setFilteredUsers(List<User> filteredUsers) {
         mFilteredUsers = filteredUsers;
     }
 
-    public List<UserListRes.Data> getUsers() {
+    public List<User> getUsers() {
         return mUsers;
     }
 
-    public List<UserListRes.Data> getFilteredUsers() {
+    public List<User> getFilteredUsers() {
         return mFilteredUsers;
     }
 }

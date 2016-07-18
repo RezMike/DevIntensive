@@ -31,6 +31,7 @@
 
     <string name="choose_email_client">Выберите e-mail клиент:</string>
     <string name="choose_browser">Выберите браузер:</string>
+    <string name="enter_user_name">Введите имя пользователя</string>
 
     <string name="auth_enter">Войти</string>
     <string name="auth_email_hint">E-mail</string>
@@ -45,4 +46,5 @@
     <string name="error_network_not_available">Сеть на данный момент не доступна, попробуйте позже</string>
     <string name="error_wrong_login_or_password">Неверный логин или пароль</string>
     <string name="error_all_bad">Что-то пошло не так!</string>
+    <string name="error_load_users_list">Список пользователей не может быть получен</string>
 </resources>

@@ -1,7 +1,6 @@
 package com.softdesign.devintensive.ui.activities;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -47,7 +46,7 @@ import com.softdesign.devintensive.ui.custom.EditTextWatcher;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.NetworkStatusChecker;
-import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -109,7 +108,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private AppBarLayout.LayoutParams mAppBarParams = null;
 
     private File mPhotoFile = null;
-    private Uri mSelectedImage = null;
 
     private List<EditTextWatcher> mTextWatchers;
 
@@ -125,7 +123,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mFab.setOnClickListener(this);
         mProfilePlaceholder.setOnClickListener(this);
 
-        for (ImageView imageView : mUserInfoImages){
+        for (ImageView imageView : mUserInfoImages) {
             imageView.setOnClickListener(this);
         }
 
@@ -134,18 +132,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         initUserFields();
         initUserInfoValues();
 
-        Picasso.with(this)
-                .load(mDataManager.getPreferencesManager().loadUserPhoto())
-                .memoryPolicy(MemoryPolicy.NO_CACHE)
-                .placeholder(R.drawable.user_bg)
-                .error(R.drawable.user_bg)
-                .into(mProfileImage);
+        setUserPhoto();
+
         mCollapsingToolbar.setTitle(mDataManager.getPreferencesManager().getUserName());
 
-        if (savedInstanceState == null) {
-            //активити запускается впервые
-
-        } else {
+        if (savedInstanceState != null) {
             mCurrentEditMode = savedInstanceState.getInt(ConstantManager.EDIT_MODE_KEY, 0);
             changeEditMode(mCurrentEditMode);
         }
@@ -200,8 +191,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     public void onBackPressed() {
         if (mNavigationDrawer.isDrawerOpen(GravityCompat.START)) {
             mNavigationDrawer.closeDrawer(GravityCompat.START);
-        } else
-        if (mCurrentEditMode == 1) {
+        } else if (mCurrentEditMode == 1) {
             changeEditMode(0);
             mCurrentEditMode = 0;
         } else {
@@ -226,7 +216,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 break;
             case R.id.phone_img:
                 String phoneNumber = mDataManager.getPreferencesManager().getUserProfileField(ConstantManager.USER_PHONE_KEY);
-                if (!phoneNumber.equals("")){
+                if (!phoneNumber.equals("")) {
                     Intent mCallIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phoneNumber));
                     startActivity(mCallIntent);
                 }
@@ -242,14 +232,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 break;
             case R.id.vk_img:
                 String vkAddress = mDataManager.getPreferencesManager().getUserProfileField(ConstantManager.USER_VK_KEY);
-                if (!vkAddress.equals("")){
+                if (!vkAddress.equals("")) {
                     Intent mVkIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + vkAddress));
                     startActivity(Intent.createChooser(mVkIntent, getString(R.string.choose_browser)));
                 }
                 break;
             case R.id.git_img:
                 String gitAddress = mDataManager.getPreferencesManager().getUserProfileField(ConstantManager.USER_GIT_KEY);
-                if (!gitAddress.equals("")){
+                if (!gitAddress.equals("")) {
                     Intent mGitIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + gitAddress));
                     startActivity(Intent.createChooser(mGitIntent, getString(R.string.choose_browser)));
                 }
@@ -265,18 +255,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode){
+        switch (requestCode) {
             case ConstantManager.REQUEST_GALLERY_PICTURE:
-                if (resultCode == RESULT_OK && data != null){
-                    mSelectedImage = data.getData();
-                    insertProfileImage(mSelectedImage);
-                    uploadPhoto(getFileFromUri(mSelectedImage));
+                if (resultCode == RESULT_OK && data != null) {
+                    Uri selectedImage = data.getData();
+                    insertProfileImage(selectedImage);
+                    uploadPhoto(getFileFromUri(selectedImage));
                 }
                 break;
             case ConstantManager.REQUEST_CAMERA_PICTURE:
-                if (resultCode == RESULT_OK && mPhotoFile != null){
-                    mSelectedImage = Uri.fromFile(mPhotoFile);
-                    insertProfileImage(mSelectedImage);
+                if (resultCode == RESULT_OK && mPhotoFile != null) {
+                    Uri selectedImage = Uri.fromFile(mPhotoFile);
+                    insertProfileImage(selectedImage);
                     uploadPhoto(mPhotoFile);
                 }
                 break;
@@ -285,7 +275,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     @Override
     protected Dialog onCreateDialog(int id) {
-        switch (id){
+        switch (id) {
             case ConstantManager.LOAD_PROFILE_PHOTO:
                 String[] selectItems = {
                         getString(R.string.user_profile_dialog_gallery),
@@ -298,7 +288,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 builder.setItems(selectItems, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int choiceItem) {
-                        switch (choiceItem){
+                        switch (choiceItem) {
                             case 0:
                                 loadPhotoFromGallery();
                                 break;
@@ -345,7 +335,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
-                switch (item.getItemId()){
+                switch (item.getItemId()) {
                     case R.id.team_menu:
                         Intent profileIntent = new Intent(MainActivity.this, UserListActivity.class);
                         startActivity(profileIntent);
@@ -366,10 +356,47 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     private void setRoundedAvatar() {
         View headerLayout = mNavigationView.getHeaderView(0);
-        ImageView avatarImg = (ImageView) headerLayout.findViewById(R.id.avatar);
+        final ImageView avatarImg = (ImageView) headerLayout.findViewById(R.id.avatar);
         Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.avatar);
         RoundedDrawable roundedDrawable = new RoundedDrawable(bitmap);
         avatarImg.setImageDrawable(roundedDrawable);
+    }
+
+    private void setUserPhoto(){
+        DataManager.getInstance().getPicasso()
+                .load(mDataManager.getPreferencesManager().loadUserPhoto())
+                .fit()
+                .centerCrop()
+                .networkPolicy(NetworkPolicy.OFFLINE)
+                .error(R.drawable.user_bg)
+                .placeholder(R.drawable.user_bg)
+                .into(mProfileImage, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d(TAG, "load from cache");
+                    }
+
+                    @Override
+                    public void onError() {
+                        DataManager.getInstance().getPicasso()
+                                .load(mDataManager.getPreferencesManager().loadUserPhoto())
+                                .fit()
+                                .centerCrop()
+                                .error(R.drawable.user_bg)
+                                .placeholder(R.drawable.user_bg)
+                                .into(mProfileImage, new com.squareup.picasso.Callback() {
+                                    @Override
+                                    public void onSuccess() {
+
+                                    }
+
+                                    @Override
+                                    public void onError() {
+                                        Log.d(TAG, "Could not fetch image");
+                                    }
+                                });
+                    }
+                });
     }
 
     /**
@@ -425,7 +452,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mDataManager.getPreferencesManager().saveUserProfileFields(userFields);
     }
 
-    private void initUserInfoValues(){
+    private void initUserInfoValues() {
         List<String> userValues = mDataManager.getPreferencesManager().loadUserProfileValues();
         for (int i = 0; i < userValues.size(); ++i) {
             mUserValueViews.get(i).setText(userValues.get(i));
@@ -471,7 +498,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
-    private void uploadPhoto(File file){
+    private void uploadPhoto(File file) {
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
         Call<UploadPhotoRes> call = mDataManager.getRestService().uploadPhoto(
@@ -483,7 +510,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     Intent loginIntent = new Intent(MainActivity.this, AuthActivity.class);
                     startActivity(loginIntent);
                     MainActivity.this.finish();
-                } else if (response.code() == 200){
+                } else if (response.code() == 200) {
                     showSnackBar(getString(R.string.photo_uploaded_successfully));
                 }
             }
@@ -500,7 +527,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         });
     }
 
-    private void uploadAvatar(File file){
+    private void uploadAvatar(File file) {
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
         Call<UploadPhotoRes> call = mDataManager.getRestService().uploadPhoto(
@@ -512,7 +539,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     Intent loginIntent = new Intent(MainActivity.this, AuthActivity.class);
                     startActivity(loginIntent);
                     MainActivity.this.finish();
-                } else if (response.code() == 200){
+                } else if (response.code() == 200) {
                     showSnackBar(getString(R.string.photo_uploaded_successfully));
                 }
             }
@@ -529,8 +556,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         });
     }
 
-    private File getFileFromUri(Uri uri){
-        String[] filePathColumn = { MediaStore.Images.Media.DATA };
+    private File getFileFromUri(Uri uri) {
+        String[] filePathColumn = {MediaStore.Images.Media.DATA};
         Cursor cursor = this.getContentResolver().query(uri, filePathColumn, null, null, null);
         cursor.moveToFirst();
         int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
@@ -541,8 +568,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == ConstantManager.CAMERA_PERMISSION_REQUEST_CODE && grantResults.length == 2){
-            if (grantResults[0] == PackageManager.PERMISSION_DENIED){
+        if (requestCode == ConstantManager.CAMERA_PERMISSION_REQUEST_CODE && grantResults.length == 2) {
+            if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 showToast(getString(R.string.need_camera_permission));
             }
             if (grantResults[1] == PackageManager.PERMISSION_DENIED) {
@@ -571,7 +598,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mCollapsingToolbar.setLayoutParams(mAppBarParams);
     }
 
-    private File createImageFile() throws IOException{
+    private File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
@@ -596,31 +623,31 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mDataManager.getPreferencesManager().saveUserPhoto(selectedImage);
     }
 
-    private void openApplicationSettings(){
+    private void openApplicationSettings() {
         Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
         startActivityForResult(appSettingsIntent, ConstantManager.PERMISSION_REQUEST_SETTINGS_CODE);
     }
 
-    private void hideEtErrors(){
-        for (int i = 0; i < mUserInfoEdits.size(); ++i){
+    private void hideEtErrors() {
+        for (int i = 0; i < mUserInfoEdits.size(); ++i) {
             EditText editText = mUserInfoEdits.get(i);
             if (mTextWatchers != null)
                 editText.removeTextChangedListener(mTextWatchers.get(i));
-            ((TextInputLayout)editText.getParent()).setError(null);
-            ((TextInputLayout)editText.getParent()).setErrorEnabled(false);
+            ((TextInputLayout) editText.getParent()).setError(null);
+            ((TextInputLayout) editText.getParent()).setErrorEnabled(false);
         }
         mTextWatchers = null;
     }
 
-    private void showEtErrors(){
+    private void showEtErrors() {
         mTextWatchers = new ArrayList<>();
-        for (int i = 0; i < mUserInfoEdits.size(); ++i){
+        for (int i = 0; i < mUserInfoEdits.size(); ++i) {
             mTextWatchers.add(i,
                     new EditTextWatcher(
                             this,
                             mUserInfoEdits.get(i),
                             mUserInfoImages.get(i),
-                            (TextInputLayout)mUserInfoEdits.get(i).getParent()
+                            (TextInputLayout) mUserInfoEdits.get(i).getParent()
                     )
             );
             mUserInfoEdits.get(i).addTextChangedListener(mTextWatchers.get(i));

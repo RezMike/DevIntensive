@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.support.design.widget.CollapsingToolbarLayout;
+import android.os.Handler;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -17,7 +17,6 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,29 +25,25 @@ import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
-import com.softdesign.devintensive.data.network.responses.UserListRes;
+import com.softdesign.devintensive.data.storage.models.User;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.ui.custom.CustomClickListener;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
 import com.softdesign.devintensive.ui.fragments.UsersRetainedFragment;
 import com.softdesign.devintensive.utils.ConstantManager;
-import com.softdesign.devintensive.utils.NetworkStatusChecker;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
-public class UserListActivity extends BaseActivity implements SearchView.OnQueryTextListener {
+public class UserListActivity extends BaseActivity{
     private static final String TAG = ConstantManager.TAG_PREFIX + "UserListActivity";
 
     private DataManager mDataManager;
     private UsersAdapter mUsersAdapter;
-    private List<UserListRes.Data> mUsers;
+    private List<User> mUsers;
     private UsersRetainedFragment mRetainedFragment;
 
     @BindView(R.id.main_coordinator_container)
@@ -75,7 +70,7 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
 
         setupToolbar();
         setupDrawer();
-        initUsersData();
+        initUsers();
     }
 
     @Override
@@ -92,7 +87,24 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
         getMenuInflater().inflate(R.menu.search_menu, menu);
         MenuItem searchItem = menu.findItem(R.id.search_menu);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-        searchView.setOnQueryTextListener(this);
+        searchView.setQueryHint(getString(R.string.enter_user_name));
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if (mUsersAdapter != null) {
+                    mUsersAdapter.getFilter().filter(query);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (mUsersAdapter != null) {
+                    mUsersAdapter.getFilter().filter(newText);
+                }
+                return true;
+            }
+        });
         return true;
     }
 
@@ -103,22 +115,6 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onQueryTextSubmit(String query) {
-        if (mUsersAdapter != null) {
-            mUsersAdapter.getFilter().filter(query);
-        }
-        return true;
-    }
-
-    @Override
-    public boolean onQueryTextChange(String newText) {
-        if (mUsersAdapter != null) {
-            mUsersAdapter.getFilter().filter(newText);
-        }
-        return true;
     }
 
     private void showSnackBar(String massage) {
@@ -176,57 +172,33 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
         avatarImg.setImageDrawable(roundedDrawable);
     }
 
-    private void loadUsersData() {
-        showProgress();
-        Call<UserListRes> call = mDataManager.getUserList();
-        call.enqueue(new Callback<UserListRes>() {
-            @Override
-            public void onResponse(Call<UserListRes> call, final Response<UserListRes> response) {
-                hideProgress();
-                if (response.code() == 404) {
-                    Intent loginIntent = new Intent(UserListActivity.this, AuthActivity.class);
-                    startActivity(loginIntent);
-                    UserListActivity.this.finish();
+    private void loadUsersFromDb() {
+        mUsers = mDataManager.getUserListFromDb();
+        if (mUsers.size() == 0){
+            showSnackBar(getString(R.string.error_load_users_list));
+        } else {
+            mUsersAdapter = new UsersAdapter(mUsers, new CustomClickListener() {
+                @Override
+                public void onUserItemClickListener(int position) {
+                    UserDTO userDTO = new UserDTO(mUsers.get(position));
+                    Intent profileIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
+                    profileIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
+                    startActivity(profileIntent);
                 }
-                try {
-                    mUsers = response.body().getData();
-                    mUsersAdapter = new UsersAdapter(mUsers, new CustomClickListener() {
-                        @Override
-                        public void onUserItemClickListener(int position) {
-                            UserDTO userDTO = new UserDTO(mUsers.get(position));
-                            Intent profileIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
-                            profileIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
-                            startActivity(profileIntent);
-                        }
-                    });
-                    mRecyclerView.setAdapter(mUsersAdapter);
-                    mRetainedFragment.setUsers(mUsersAdapter.getUsers());
-                    mRetainedFragment.setFilteredUsers(mUsersAdapter.getFilteredUsers());
-                } catch (NullPointerException e) {
-                    Log.e(TAG, e.toString());
-                    showSnackBar(getString(R.string.error_all_bad));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<UserListRes> call, Throwable t) {
-                hideProgress();
-                if (!NetworkStatusChecker.isNetworkAvailable(UserListActivity.this)) {
-                    showSnackBar(getString(R.string.error_network_not_available));
-                } else {
-                    showSnackBar(getString(R.string.error_all_bad));
-                }
-            }
-        });
+            });
+            mRecyclerView.setAdapter(mUsersAdapter);
+            mRetainedFragment.setUsers(mUsersAdapter.getUsers());
+            mRetainedFragment.setFilteredUsers(mUsersAdapter.getFilteredUsers());
+        }
     }
 
-    private void initUsersData() {
+    private void initUsers() {
         FragmentManager fm = getFragmentManager();
         mRetainedFragment = (UsersRetainedFragment) fm.findFragmentByTag("users_data");
         if (mRetainedFragment == null) {
             mRetainedFragment = new UsersRetainedFragment();
             fm.beginTransaction().add(mRetainedFragment, "users_data").commit();
-            loadUsersData();
+            loadUsersFromDb();
         } else {
             mUsers = mRetainedFragment.getUsers();
             mUsersAdapter = new UsersAdapter(mUsers, new CustomClickListener() {
