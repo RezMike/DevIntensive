@@ -3,9 +3,6 @@ package com.softdesign.devintensive.data.network.responses;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class UserModelRes {
     @SerializedName("success")
     @Expose
@@ -21,12 +18,12 @@ public class UserModelRes {
     public class Data {
         @SerializedName("user")
         @Expose
-        private UserRes.Data user;
+        private UserInfoRes.Data user;
         @SerializedName("token")
         @Expose
         private String token;
 
-        public UserRes.Data getUser() {
+        public UserInfoRes.Data getUser() {
             return user;
         }
 

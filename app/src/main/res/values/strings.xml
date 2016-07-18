@@ -2,7 +2,7 @@
     <string name="app_name">Резниченко Михаил</string>
 
     <string name="rating">Рейтинг</string>
-    <string name="code_strings">Написано строк кода</string>
+    <string name="code_lines">Написано строк кода</string>
     <string name="projects">Проектов</string>
 
     <string name="phone_hint">Мобильный</string>
@@ -10,9 +10,11 @@
     <string name="vk_hint">Профиль в VK</string>
     <string name="repository_hint">Репозиторий</string>
     <string name="about_hint">О себе</string>
+    <string name="review">Просмотр</string>
 
     <string name="my_profile">Мой профиль</string>
     <string name="team">Команда</string>
+    <string name="exit">Выход</string>
 
     <string name="image_placeholder">Изменить фотографию профиля</string>
     <string name="user_profile.dialog.title">Изменить фотографию профиля</string>
@@ -21,6 +23,7 @@
     <string name="user_profile.dialog.cancel">Отмена</string>
     <string name="user_profile.choose_photo">Выберите фото</string>
 
+    <string name="photo_uploaded_successfully">Фотография успешно загружена на сервер</string>
     <string name="give_permission">Для корректной работы приложения необходимо дать требуемые разрешения!</string>
     <string name="need_camera_permission">Необходимо разрешение на работу с камерой!</string>
     <string name="need_write_permission">Необходимо разрешение на запись!</string>
@@ -35,11 +38,11 @@
     <string name="auth_remember">Забыли пароль?</string>
 
     <string name="error_create_file">Ошибка создания файла</string>
-    <string name="error_phone_et">Номер телефона должен содержать 11-20 символов</string>
+    <string name="error_phone_et">Введите номер телефона в формате\n+7 (987) 654-32-10</string>
     <string name="error_email_et">Введен неверный адрес e-mail</string>
     <string name="error_vk_et">Введите адрес в формате vk.com/xxx</string>
     <string name="error_git_et">Введите адрес в формате github.com/xxx</string>
     <string name="error_network_not_available">Сеть на данный момент не доступна, попробуйте позже</string>
     <string name="error_wrong_login_or_password">Неверный логин или пароль</string>
-    <string name="error_all_bad">Все пропало, Шеф!!!</string>
+    <string name="error_all_bad">Что-то пошло не так!</string>
 </resources>

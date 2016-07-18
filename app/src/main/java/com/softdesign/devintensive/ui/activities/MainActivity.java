@@ -1,6 +1,7 @@
 package com.softdesign.devintensive.ui.activities;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -45,6 +46,7 @@ import com.softdesign.devintensive.data.network.responses.UploadPhotoRes;
 import com.softdesign.devintensive.ui.custom.EditTextWatcher;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.NetworkStatusChecker;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
@@ -61,7 +63,6 @@ import butterknife.ButterKnife;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -130,13 +131,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
         setupToolbar();
         setupDrawer();
-        setRoundedAvatar();
         initUserFields();
         initUserInfoValues();
 
         Picasso.with(this)
                 .load(mDataManager.getPreferencesManager().loadUserPhoto())
                 .memoryPolicy(MemoryPolicy.NO_CACHE)
+                .placeholder(R.drawable.user_bg)
+                .error(R.drawable.user_bg)
                 .into(mProfileImage);
         mCollapsingToolbar.setTitle(mDataManager.getPreferencesManager().getUserName());
 
@@ -338,13 +340,26 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         userName.setText(mDataManager.getPreferencesManager().getUserName());
         userEmail.setText(mDataManager.getPreferencesManager().getEmail());
 
+        setRoundedAvatar();
+
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
-                showSnackBar(item.getTitle().toString());
-                item.setChecked(true);
-                mNavigationDrawer.closeDrawer(GravityCompat.START);
-                return false;
+                switch (item.getItemId()){
+                    case R.id.team_menu:
+                        Intent profileIntent = new Intent(MainActivity.this, UserListActivity.class);
+                        startActivity(profileIntent);
+                        mNavigationDrawer.closeDrawer(GravityCompat.START);
+                        break;
+                    case R.id.user_profile_menu:
+                        mNavigationDrawer.closeDrawer(GravityCompat.START);
+                        break;
+                    case R.id.exit_menu:
+                        mDataManager.getPreferencesManager().saveAuthToken("");
+                        Intent exitIntent = new Intent(MainActivity.this, AuthActivity.class);
+                        startActivity(exitIntent);
+                }
+                return true;
             }
         });
     }
@@ -464,12 +479,23 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         call.enqueue(new Callback<UploadPhotoRes>() {
             @Override
             public void onResponse(Call<UploadPhotoRes> call, Response<UploadPhotoRes> response) {
-                //// TODO: 13.07.2016 реализовать получение колбека
+                if (response.code() == 404) {
+                    Intent loginIntent = new Intent(MainActivity.this, AuthActivity.class);
+                    startActivity(loginIntent);
+                    MainActivity.this.finish();
+                } else if (response.code() == 200){
+                    showSnackBar(getString(R.string.photo_uploaded_successfully));
+                }
             }
 
             @Override
             public void onFailure(Call<UploadPhotoRes> call, Throwable t) {
-                //// TODO: 13.07.2016 реализовать получение ошибки
+                hideProgress();
+                if (!NetworkStatusChecker.isNetworkAvailable(MainActivity.this)) {
+                    showSnackBar(getString(R.string.error_network_not_available));
+                } else {
+                    showSnackBar(getString(R.string.error_all_bad));
+                }
             }
         });
     }
@@ -482,12 +508,23 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         call.enqueue(new Callback<UploadPhotoRes>() {
             @Override
             public void onResponse(Call<UploadPhotoRes> call, Response<UploadPhotoRes> response) {
-                //// TODO: 13.07.2016 реализовать получение колбека
+                if (response.code() == 404) {
+                    Intent loginIntent = new Intent(MainActivity.this, AuthActivity.class);
+                    startActivity(loginIntent);
+                    MainActivity.this.finish();
+                } else if (response.code() == 200){
+                    showSnackBar(getString(R.string.photo_uploaded_successfully));
+                }
             }
 
             @Override
             public void onFailure(Call<UploadPhotoRes> call, Throwable t) {
-                //// TODO: 13.07.2016 реализовать получение ошибки
+                hideProgress();
+                if (!NetworkStatusChecker.isNetworkAvailable(MainActivity.this)) {
+                    showSnackBar(getString(R.string.error_network_not_available));
+                } else {
+                    showSnackBar(getString(R.string.error_all_bad));
+                }
             }
         });
     }

@@ -14,7 +14,7 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.requests.UserLoginReq;
 import com.softdesign.devintensive.data.network.responses.UserModelRes;
-import com.softdesign.devintensive.data.network.responses.UserRes;
+import com.softdesign.devintensive.data.network.responses.UserInfoRes;
 import com.softdesign.devintensive.utils.NetworkStatusChecker;
 
 import java.util.Arrays;
@@ -25,7 +25,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AuthActivity extends BaseActivity implements View.OnClickListener{
+public class AuthActivity extends BaseActivity implements View.OnClickListener {
 
     private DataManager mDataManager;
 
@@ -60,7 +60,7 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.login_btn:
                 signIn();
                 break;
@@ -70,23 +70,21 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
         }
     }
 
-    private void showSnackbar(String massage){
+    private void showSnackBar(String massage) {
         Snackbar.make(mCoordinatorLayout, massage, Snackbar.LENGTH_LONG).show();
     }
 
-    private void rememberPassword(){
+    private void rememberPassword() {
         Intent rememberIntent = new Intent(Intent.ACTION_VIEW,
                 Uri.parse("http://devintensive.softdesign-apps.ru/forgotpass"));
         startActivity(rememberIntent);
     }
 
-    private void loginSuccess(UserRes.Data data){
-        //mDataManager.getPreferencesManager().saveAuthToken(userModel.getData().getToken());
+    private void loginSuccess(UserInfoRes.Data data) {
         mDataManager.getPreferencesManager().saveUserId(data.getId());
         saveUserValues(data);
         saveUserFields(data);
-        mDataManager.getPreferencesManager().saveUserName(data.getSecondName()
-                + " " + data.getFirstName());
+        mDataManager.getPreferencesManager().saveUserName(data.getFullName());
         mDataManager.getPreferencesManager().saveUserPhoto(
                 Uri.parse(data.getPublicInfo().getPhoto()));
         mDataManager.getPreferencesManager().saveUserAvatar(
@@ -98,30 +96,33 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
         startActivity(loginIntent);
     }
 
-    private void signInByToken(){
+    private void signInByToken() {
         if (NetworkStatusChecker.isNetworkAvailable(this)) {
             if (!mDataManager.getPreferencesManager().getAuthToken().equals("")) {
-                Call<UserRes> call = mDataManager.loginToken(mDataManager.getPreferencesManager().getUserId());
-                call.enqueue(new Callback<UserRes>() {
+                showProgress();
+                Call<UserInfoRes> call = mDataManager.loginToken(mDataManager.getPreferencesManager().getUserId());
+                call.enqueue(new Callback<UserInfoRes>() {
                     @Override
-                    public void onResponse(Call<UserRes> call, Response<UserRes> response) {
+                    public void onResponse(Call<UserInfoRes> call, Response<UserInfoRes> response) {
+                        hideProgress();
                         if (response.code() == 200) {
                             loginSuccess(response.body().getData());
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<UserRes> call, Throwable t) {
-                        //// TODO: 12.07.2016 обработать ошибки
+                    public void onFailure(Call<UserInfoRes> call, Throwable t) {
+                        showSnackBar(getString(R.string.error_all_bad));
                     }
                 });
             }
         } else {
-            showSnackbar(getString(R.string.error_network_not_available));
+            showSnackBar(getString(R.string.error_network_not_available));
         }
     }
 
-    private void signIn(){
+    private void signIn() {
+        showProgress();
         Call<UserModelRes> call = mDataManager.loginUser(
                 new UserLoginReq(
                         mLoginEt.getText().toString(),
@@ -131,24 +132,30 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
         call.enqueue(new Callback<UserModelRes>() {
             @Override
             public void onResponse(Call<UserModelRes> call, Response<UserModelRes> response) {
+                hideProgress();
                 if (response.code() == 200) {
                     mDataManager.getPreferencesManager().saveAuthToken(response.body().getData().getToken());
                     loginSuccess(response.body().getData().getUser());
                 } else if (response.code() == 404) {
-                    showSnackbar(getString(R.string.error_wrong_login_or_password));
+                    showSnackBar(getString(R.string.error_wrong_login_or_password));
                 } else {
-                    showSnackbar(getString(R.string.error_all_bad));
+                    showSnackBar(getString(R.string.error_all_bad));
                 }
             }
 
             @Override
             public void onFailure(Call<UserModelRes> call, Throwable t) {
-                //// TODO: 12.07.2016 обработать ошибки
+                hideProgress();
+                if (!NetworkStatusChecker.isNetworkAvailable(AuthActivity.this)) {
+                    showSnackBar(getString(R.string.error_network_not_available));
+                } else {
+                    showSnackBar(getString(R.string.error_all_bad));
+                }
             }
         });
     }
 
-    private void saveUserValues(UserRes.Data data){
+    private void saveUserValues(UserInfoRes.Data data) {
         int[] userValues = {
                 data.getProfileValues().getRating(),
                 data.getProfileValues().getLinesCode(),
@@ -157,7 +164,7 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener{
         mDataManager.getPreferencesManager().saveUserProfileValues(userValues);
     }
 
-    private void saveUserFields(UserRes.Data data) {
+    private void saveUserFields(UserInfoRes.Data data) {
         String[] userFields = {
                 data.getContacts().getPhone(),
                 data.getContacts().getEmail(),

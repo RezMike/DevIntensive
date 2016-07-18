@@ -10,5 +10,9 @@
             android:id="@+id/team_menu"
             android:icon="@drawable/ic_people_black_24dp"
             android:title="@string/team"/>
+        <item
+            android:id="@+id/exit_menu"
+            android:icon="@drawable/ic_exit_black_24dp"
+            android:title="@string/exit"/>
     </group>
 </menu>

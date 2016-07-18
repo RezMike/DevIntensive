@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserRes {
+public class UserInfoRes {
 
     @SerializedName("success")
     @Expose
@@ -58,12 +58,8 @@ public class UserRes {
             return id;
         }
 
-        public String getFirstName() {
-            return firstName;
-        }
-
-        public String getSecondName() {
-            return secondName;
+        public String getFullName() {
+            return secondName + " " + firstName;
         }
 
         public Repositories getRepositories() {

@@ -23,7 +23,7 @@
     <dimen name="spacing_medium_32">32dp</dimen>
     <dimen name="spacing_large_56">56dp</dimen>
     <dimen name="spacing_larger_72">72dp</dimen>
-    
+
     <!--Vertical spaces in Material Design-->
     <dimen name="spacing_status_bar">24dp</dimen>
     <dimen name="spacing_tool_bar">56dp</dimen>
