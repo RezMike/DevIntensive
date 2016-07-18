@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -23,8 +22,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.redmadrobot.chronos.ChronosConnector;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.storage.LoadUserDataOperation;
 import com.softdesign.devintensive.data.storage.models.User;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
@@ -38,13 +39,14 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class UserListActivity extends BaseActivity{
+public class UserListActivity extends BaseActivity {
     private static final String TAG = ConstantManager.TAG_PREFIX + "UserListActivity";
 
     private DataManager mDataManager;
     private UsersAdapter mUsersAdapter;
     private List<User> mUsers;
     private UsersRetainedFragment mRetainedFragment;
+    private ChronosConnector mConnector;
 
     @BindView(R.id.main_coordinator_container)
     CoordinatorLayout mCoordinatorLayout;
@@ -62,6 +64,8 @@ public class UserListActivity extends BaseActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_list);
         ButterKnife.bind(this);
+        mConnector = new ChronosConnector();
+        mConnector.onCreate(this, savedInstanceState);
 
         mDataManager = DataManager.getInstance();
 
@@ -71,6 +75,18 @@ public class UserListActivity extends BaseActivity{
         setupToolbar();
         setupDrawer();
         initUsers();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mConnector.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mConnector.onPause();
     }
 
     @Override
@@ -115,6 +131,33 @@ public class UserListActivity extends BaseActivity{
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mConnector.onSaveInstanceState(outState);
+    }
+
+    public void onOperationFinished(final LoadUserDataOperation.Result result) {
+        mUsers = result.getOutput();
+        if (mUsers.size() == 0) {
+            showSnackBar(getString(R.string.error_load_users_list));
+        } else {
+            mUsersAdapter = new UsersAdapter(mUsers, new CustomClickListener() {
+                @Override
+                public void onUserItemClickListener(int position) {
+                    UserDTO userDTO = new UserDTO(mUsers.get(position));
+                    Intent profileIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
+                    profileIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
+                    startActivity(profileIntent);
+                }
+            });
+            mRecyclerView.setAdapter(mUsersAdapter);
+            mRetainedFragment.setUsers(mUsersAdapter.getUsers());
+            mRetainedFragment.setFilteredUsers(mUsersAdapter.getFilteredUsers());
+        }
+        hideProgress();
     }
 
     private void showSnackBar(String massage) {
@@ -173,22 +216,11 @@ public class UserListActivity extends BaseActivity{
     }
 
     private void loadUsersFromDb() {
-        mUsers = mDataManager.getUserListFromDb();
-        if (mUsers.size() == 0){
-            showSnackBar(getString(R.string.error_load_users_list));
-        } else {
-            mUsersAdapter = new UsersAdapter(mUsers, new CustomClickListener() {
-                @Override
-                public void onUserItemClickListener(int position) {
-                    UserDTO userDTO = new UserDTO(mUsers.get(position));
-                    Intent profileIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
-                    profileIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
-                    startActivity(profileIntent);
-                }
-            });
-            mRecyclerView.setAdapter(mUsersAdapter);
-            mRetainedFragment.setUsers(mUsersAdapter.getUsers());
-            mRetainedFragment.setFilteredUsers(mUsersAdapter.getFilteredUsers());
+        try {
+            showProgress();
+            mConnector.runOperation(new LoadUserDataOperation(), false);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

@@ -7,17 +7,12 @@ import com.softdesign.devintensive.data.network.RestService;
 import com.softdesign.devintensive.data.network.ServiceGenerator;
 import com.softdesign.devintensive.data.network.requests.UserLoginReq;
 import com.softdesign.devintensive.data.network.responses.UploadPhotoRes;
+import com.softdesign.devintensive.data.network.responses.UserInfoRes;
 import com.softdesign.devintensive.data.network.responses.UserListRes;
 import com.softdesign.devintensive.data.network.responses.UserModelRes;
-import com.softdesign.devintensive.data.network.responses.UserInfoRes;
 import com.softdesign.devintensive.data.storage.models.DaoSession;
-import com.softdesign.devintensive.data.storage.models.User;
-import com.softdesign.devintensive.data.storage.models.UserDao;
 import com.softdesign.devintensive.utils.DevintensiveApplication;
 import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.MultipartBody;
 import retrofit2.Call;
@@ -91,20 +86,6 @@ public class DataManager {
 
     public DaoSession getDaoSession() {
         return mDaoSession;
-    }
-
-    public List<User> getUserListFromDb() {
-        List<User> userList = new ArrayList<>();
-        try {
-            userList = mDaoSession.queryBuilder(User.class)
-                    .where(UserDao.Properties.CodeLines.gt(0))
-                    .orderDesc(UserDao.Properties.Rating)
-                    .build()
-                    .list();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        return userList;
     }
 
     //endregion
