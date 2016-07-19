@@ -20,11 +20,11 @@ import com.softdesign.devintensive.data.network.responses.UserListRes;
 import com.softdesign.devintensive.data.network.responses.UserModelRes;
 import com.softdesign.devintensive.data.storage.SaveUserDataOperation;
 import com.softdesign.devintensive.utils.NetworkStatusChecker;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 
 import java.util.Arrays;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -33,36 +33,26 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
 
     private DataManager mDataManager;
     private ChronosConnector mConnector;
+    private Bus mBus;
 
-    @BindView(R.id.main_coordinator_container)
-    CoordinatorLayout mCoordinatorLayout;
-    @BindView(R.id.login_btn)
-    Button mSignInBtn;
-    @BindView(R.id.login_email)
-    EditText mLoginEt;
-    @BindView(R.id.login_password)
-    EditText mPasswordEt;
-    @BindView(R.id.remember_tv)
-    TextView mRememberPassword;
-    @BindView(R.id.login_indicator)
-    View mIndicator;
+    private CoordinatorLayout mCoordinatorLayout;
+    private Button mSignInBtn;
+    private EditText mLoginEt;
+    private EditText mPasswordEt;
+    private TextView mRememberPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_auth);
-        ButterKnife.bind(this);
+        setContentView(R.layout.splash_screen);
+        mBus = new Bus();
+        mBus.register(AuthActivity.this);
         mConnector = new ChronosConnector();
         mConnector.onCreate(this, savedInstanceState);
 
         mDataManager = DataManager.getInstance();
 
         signInByToken();
-
-        mSignInBtn.setOnClickListener(this);
-        mRememberPassword.setOnClickListener(this);
-
-        mLoginEt.setText(mDataManager.getPreferencesManager().getLoginEmail());
     }
 
     @Override
@@ -95,6 +85,37 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
         mConnector.onSaveInstanceState(outState);
     }
 
+    /**
+     * Вызывается при вызове mBus.post(error) (в случае ошибки при запросе на сервер)
+     *
+     * @param error - текст ошибки
+     */
+    @Subscribe
+    public void answerError(String error) {
+        if (mLoginEt == null) {
+            setContentView(R.layout.activity_auth);
+
+            mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.main_coordinator_container);
+            mSignInBtn = (Button) findViewById(R.id.login_btn);
+            mLoginEt = (EditText) findViewById(R.id.login_email);
+            mPasswordEt = (EditText) findViewById(R.id.login_password);
+            mRememberPassword = (TextView) findViewById(R.id.remember_tv);
+
+            mSignInBtn.setOnClickListener(this);
+            mRememberPassword.setOnClickListener(this);
+
+            mLoginEt.setText(mDataManager.getPreferencesManager().getLoginEmail());
+        }
+        if (!error.isEmpty()) {
+            showSnackBar(error);
+        }
+    }
+
+    /**
+     * Вызывается после записи данных, полученных с сервера, в базу данных
+     *
+     * @param result - результат выполнения
+     */
     public void onOperationFinished(final SaveUserDataOperation.Result result) {
         hideProgress();
         Intent loginIntent = new Intent(AuthActivity.this, MainActivity.class);
@@ -120,37 +141,44 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
                 Uri.parse(data.getPublicInfo().getPhoto()));
         mDataManager.getPreferencesManager().saveUserAvatar(
                 Uri.parse(data.getPublicInfo().getAvatar()));
-        mDataManager.getPreferencesManager().saveLoginEmail(mLoginEt.getText().toString());
+        if (mLoginEt != null) {
+            mDataManager.getPreferencesManager().saveLoginEmail(mLoginEt.getText().toString());
+        }
 
         saveUserInDb();
     }
 
     private void signInByToken() {
-        if (NetworkStatusChecker.isNetworkAvailable(this)) {
-            if (!mDataManager.getPreferencesManager().getAuthToken().equals("")) {
-                showProgress();
-                Call<UserInfoRes> call = mDataManager.loginToken(mDataManager.getPreferencesManager().getUserId());
-                call.enqueue(new Callback<UserInfoRes>() {
-                    @Override
-                    public void onResponse(Call<UserInfoRes> call, Response<UserInfoRes> response) {
-                        hideProgress();
-                        if (response.code() == 200) {
-                            loginSuccess(response.body().getData());
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<UserInfoRes> call, Throwable t) {
-                        showSnackBar(getString(R.string.error_all_bad));
-                    }
-                });
-            }
-        } else {
-            showSnackBar(getString(R.string.error_network_not_available));
+        if (!NetworkStatusChecker.isNetworkAvailable(this)) {
+            mBus.post(getString(R.string.error_network_not_available));
+            return;
         }
+        if (mDataManager.getPreferencesManager().getAuthToken().equals("")) {
+            mBus.post("");
+            return;
+        }
+        Call<UserInfoRes> call = mDataManager.loginToken(mDataManager.getPreferencesManager().getUserId());
+        call.enqueue(new Callback<UserInfoRes>() {
+            @Override
+            public void onResponse(Call<UserInfoRes> call, Response<UserInfoRes> response) {
+                if (response.code() == 200) {
+                    Log.d(TAG, "onResponse: error");
+                    loginSuccess(response.body().getData());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserInfoRes> call, Throwable t) {
+                mBus.post(getString(R.string.error_all_bad));
+            }
+        });
     }
 
     private void signIn() {
+        if (!NetworkStatusChecker.isNetworkAvailable(this)) {
+            mBus.post(getString(R.string.error_network_not_available));
+            return;
+        }
         showProgress();
         Call<UserModelRes> call = mDataManager.loginUser(
                 new UserLoginReq(
@@ -165,19 +193,18 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
                     mDataManager.getPreferencesManager().saveAuthToken(response.body().getData().getToken());
                     loginSuccess(response.body().getData().getUser());
                 } else if (response.code() == 404) {
-                    showSnackBar(getString(R.string.error_wrong_login_or_password));
+                    mBus.post(getString(R.string.error_wrong_login_or_password));
                 } else {
-                    showSnackBar(getString(R.string.error_all_bad));
+                    mBus.post(getString(R.string.error_all_bad));
                 }
             }
 
             @Override
             public void onFailure(Call<UserModelRes> call, Throwable t) {
-                hideProgress();
                 if (!NetworkStatusChecker.isNetworkAvailable(AuthActivity.this)) {
-                    showSnackBar(getString(R.string.error_network_not_available));
+                    mBus.post(getString(R.string.error_network_not_available));
                 } else {
-                    showSnackBar(getString(R.string.error_all_bad));
+                    mBus.post(getString(R.string.error_all_bad));
                 }
             }
         });
@@ -204,7 +231,10 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void saveUserInDb() {
-        showProgress();
+        if (!NetworkStatusChecker.isNetworkAvailable(this)) {
+            mBus.post(getString(R.string.error_network_not_available));
+            return;
+        }
         Call<UserListRes> call = mDataManager.getUserListFromNetwork();
         call.enqueue(new Callback<UserListRes>() {
             @Override
@@ -214,21 +244,20 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
                         mConnector.runOperation(new SaveUserDataOperation(response), false);
                     } else {
                         Log.e(TAG, "onResponse: " + String.valueOf(response.errorBody().source()));
-                        showSnackBar(getString(R.string.error_load_users_list));
+                        mBus.post(getString(R.string.error_load_users_list));
                     }
                 } catch (NullPointerException e) {
                     e.printStackTrace();
-                    showSnackBar(getString(R.string.error_all_bad));
+                    mBus.post(getString(R.string.error_all_bad));
                 }
             }
 
             @Override
             public void onFailure(Call<UserListRes> call, Throwable t) {
-                hideProgress();
                 if (!NetworkStatusChecker.isNetworkAvailable(AuthActivity.this)) {
-                    showSnackBar(getString(R.string.error_network_not_available));
+                    mBus.post(getString(R.string.error_network_not_available));
                 } else {
-                    showSnackBar(getString(R.string.error_all_bad));
+                    mBus.post(getString(R.string.error_all_bad));
                 }
             }
         });
