@@ -7,8 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -43,7 +41,7 @@ import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.network.responses.UploadPhotoRes;
 import com.softdesign.devintensive.ui.custom.EditTextWatcher;
-import com.softdesign.devintensive.ui.custom.RoundedDrawable;
+import com.softdesign.devintensive.ui.views.CircleImageView;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.NetworkStatusChecker;
 import com.squareup.picasso.NetworkPolicy;
@@ -256,18 +254,34 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case ConstantManager.REQUEST_GALLERY_PICTURE:
+            case ConstantManager.REQUEST_GALLERY_PHOTO:
                 if (resultCode == RESULT_OK && data != null) {
                     Uri selectedImage = data.getData();
                     insertProfileImage(selectedImage);
                     uploadPhoto(getFileFromUri(selectedImage));
                 }
                 break;
-            case ConstantManager.REQUEST_CAMERA_PICTURE:
+            case ConstantManager.REQUEST_CAMERA_PHOTO:
                 if (resultCode == RESULT_OK && mPhotoFile != null) {
                     Uri selectedImage = Uri.fromFile(mPhotoFile);
                     insertProfileImage(selectedImage);
                     uploadPhoto(mPhotoFile);
+                }
+                break;
+            case ConstantManager.REQUEST_GALLERY_AVATAR:
+                if (resultCode == RESULT_OK && data != null) {
+                    Uri selectedImage = data.getData();
+                    insertAvatarImage(selectedImage);
+                    setRoundedAvatar();
+                    uploadAvatar(getFileFromUri(selectedImage));
+                }
+                break;
+            case ConstantManager.REQUEST_CAMERA_AVATAR:
+                if (resultCode == RESULT_OK && mPhotoFile != null) {
+                    Uri selectedImage = Uri.fromFile(mPhotoFile);
+                    insertAvatarImage(selectedImage);
+                    setRoundedAvatar();
+                    uploadAvatar(mPhotoFile);
                 }
                 break;
         }
@@ -277,15 +291,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     protected Dialog onCreateDialog(int id) {
         switch (id) {
             case ConstantManager.LOAD_PROFILE_PHOTO:
-                String[] selectItems = {
+                String[] selectPhotoItems = {
                         getString(R.string.user_profile_dialog_gallery),
                         getString(R.string.user_profile_dialog_camera),
                         getString(R.string.user_profile_dialog_cancel)
                 };
 
-                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(getString(R.string.user_profile_dialog_title));
-                builder.setItems(selectItems, new DialogInterface.OnClickListener() {
+                final AlertDialog.Builder photoBuilder = new AlertDialog.Builder(this);
+                photoBuilder.setTitle(getString(R.string.user_profile_dialog_photo_title));
+                photoBuilder.setItems(selectPhotoItems, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int choiceItem) {
                         switch (choiceItem) {
@@ -301,9 +315,47 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                         }
                     }
                 });
+                return photoBuilder.create();
+            case ConstantManager.LOAD_PROFILE_AVATAR:
+                String[] selectAvatarItems = {
+                        getString(R.string.user_profile_dialog_gallery),
+                        getString(R.string.user_profile_dialog_camera),
+                        getString(R.string.user_profile_dialog_cancel)
+                };
+
+                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(getString(R.string.user_profile_dialog_avatar_title));
+                builder.setItems(selectAvatarItems, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int choiceItem) {
+                        switch (choiceItem) {
+                            case 0:
+                                loadAvatarFromGallery();
+                                break;
+                            case 1:
+                                loadAvatarFromCamera();
+                                break;
+                            case 2:
+                                dialog.cancel();
+                                break;
+                        }
+                    }
+                });
                 return builder.create();
             default:
                 return null;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == ConstantManager.CAMERA_PERMISSION_REQUEST_CODE && grantResults.length == 2) {
+            if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                showToast(getString(R.string.need_camera_permission));
+            }
+            if (grantResults[1] == PackageManager.PERMISSION_DENIED) {
+                showToast(getString(R.string.need_write_permission));
+            }
         }
     }
 
@@ -325,10 +377,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     private void setupDrawer() {
         View headerLayout = mNavigationView.getHeaderView(0);
+
         TextView userName = (TextView) headerLayout.findViewById(R.id.user_name_txt);
         TextView userEmail = (TextView) headerLayout.findViewById(R.id.user_email_txt);
         userName.setText(mDataManager.getPreferencesManager().getUserName());
         userEmail.setText(mDataManager.getPreferencesManager().getEmail());
+
+        CircleImageView avatarImg = (CircleImageView) headerLayout.findViewById(R.id.avatar);
+        avatarImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDialog(ConstantManager.LOAD_PROFILE_AVATAR);
+            }
+        });
 
         setRoundedAvatar();
 
@@ -336,12 +397,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
                 switch (item.getItemId()) {
+                    case R.id.user_profile_menu:
+                        mNavigationDrawer.closeDrawer(GravityCompat.START);
+                        break;
                     case R.id.team_menu:
                         Intent profileIntent = new Intent(MainActivity.this, UserListActivity.class);
                         startActivity(profileIntent);
-                        mNavigationDrawer.closeDrawer(GravityCompat.START);
-                        break;
-                    case R.id.user_profile_menu:
                         mNavigationDrawer.closeDrawer(GravityCompat.START);
                         break;
                     case R.id.exit_menu:
@@ -356,13 +417,27 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     private void setRoundedAvatar() {
         View headerLayout = mNavigationView.getHeaderView(0);
-        final ImageView avatarImg = (ImageView) headerLayout.findViewById(R.id.avatar);
-        Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.avatar);
-        RoundedDrawable roundedDrawable = new RoundedDrawable(bitmap);
-        avatarImg.setImageDrawable(roundedDrawable);
+        CircleImageView avatarImg = (CircleImageView) headerLayout.findViewById(R.id.avatar);
+        DataManager.getInstance().getPicasso()
+                .load(mDataManager.getPreferencesManager().loadUserAvatar())
+                .fit()
+                .centerCrop()
+                .error(R.mipmap.ic_launcher)
+                .placeholder(R.mipmap.ic_launcher)
+                .into(avatarImg, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onError() {
+                        Log.d(TAG, "Could not fetch avatar");
+                    }
+                });
     }
 
-    private void setUserPhoto(){
+    private void setUserPhoto() {
         DataManager.getInstance().getPicasso()
                 .load(mDataManager.getPreferencesManager().loadUserPhoto())
                 .fit()
@@ -437,6 +512,52 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
+    private void hideProfilePlaceholder() {
+        mProfilePlaceholder.setVisibility(View.GONE);
+    }
+
+    private void showProfilePlaceholder() {
+        mProfilePlaceholder.setVisibility(View.VISIBLE);
+    }
+
+    private void lockToolbar() {
+        //mAppBarLayout.setExpanded(true, true);
+        mAppBarParams.setScrollFlags(0);
+        mCollapsingToolbar.setLayoutParams(mAppBarParams);
+    }
+
+    private void unlockToolbar() {
+        mAppBarParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
+                | AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED);
+        mCollapsingToolbar.setLayoutParams(mAppBarParams);
+    }
+
+    private void hideEtErrors() {
+        for (int i = 0; i < mUserInfoEdits.size(); ++i) {
+            EditText editText = mUserInfoEdits.get(i);
+            if (mTextWatchers != null)
+                editText.removeTextChangedListener(mTextWatchers.get(i));
+            ((TextInputLayout) editText.getParent()).setError(null);
+            ((TextInputLayout) editText.getParent()).setErrorEnabled(false);
+        }
+        mTextWatchers = null;
+    }
+
+    private void showEtErrors() {
+        mTextWatchers = new ArrayList<>();
+        for (int i = 0; i < mUserInfoEdits.size(); ++i) {
+            mTextWatchers.add(i,
+                    new EditTextWatcher(
+                            this,
+                            mUserInfoEdits.get(i),
+                            mUserInfoImages.get(i),
+                            (TextInputLayout) mUserInfoEdits.get(i).getParent()
+                    )
+            );
+            mUserInfoEdits.get(i).addTextChangedListener(mTextWatchers.get(i));
+        }
+    }
+
     private void initUserFields() {
         List<String> userFields = mDataManager.getPreferencesManager().loadUserProfileFields();
         for (int i = 0; i < userFields.size(); ++i) {
@@ -464,7 +585,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         takeGalleryIntent.setType("image/*");
         startActivityForResult(
                 Intent.createChooser(takeGalleryIntent, getString(R.string.user_profile_choose_photo)),
-                ConstantManager.REQUEST_GALLERY_PICTURE
+                ConstantManager.REQUEST_GALLERY_PHOTO
         );
     }
 
@@ -480,7 +601,46 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             if (mPhotoFile != null) {
                 Intent takeCaptureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
-                startActivityForResult(takeCaptureIntent, ConstantManager.REQUEST_CAMERA_PICTURE);
+                startActivityForResult(takeCaptureIntent, ConstantManager.REQUEST_CAMERA_PHOTO);
+            }
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            }, ConstantManager.CAMERA_PERMISSION_REQUEST_CODE);
+            Snackbar.make(mCoordinatorLayout, R.string.give_permission,
+                    Snackbar.LENGTH_LONG)
+                    .setAction(R.string.permit, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            openApplicationSettings();
+                        }
+                    }).show();
+        }
+    }
+
+    private void loadAvatarFromGallery() {
+        Intent takeGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        takeGalleryIntent.setType("image/*");
+        startActivityForResult(
+                Intent.createChooser(takeGalleryIntent, getString(R.string.user_profile_choose_photo)),
+                ConstantManager.REQUEST_GALLERY_AVATAR
+        );
+    }
+
+    private void loadAvatarFromCamera() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            try {
+                mPhotoFile = createImageFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+                showToast(getString(R.string.error_create_file));
+            }
+            if (mPhotoFile != null) {
+                Intent takeCaptureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                takeCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mPhotoFile));
+                startActivityForResult(takeCaptureIntent, ConstantManager.REQUEST_CAMERA_AVATAR);
             }
         } else {
             ActivityCompat.requestPermissions(this, new String[]{
@@ -499,13 +659,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void uploadPhoto(File file) {
+        showProgress();
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData("photo", file.getName(), requestFile);
-        Call<UploadPhotoRes> call = mDataManager.getRestService().uploadPhoto(
+        Call<UploadPhotoRes> call = mDataManager.uploadPhoto(
                 mDataManager.getPreferencesManager().getUserId(), body);
         call.enqueue(new Callback<UploadPhotoRes>() {
             @Override
             public void onResponse(Call<UploadPhotoRes> call, Response<UploadPhotoRes> response) {
+                hideProgress();
                 if (response.code() == 404) {
                     Intent loginIntent = new Intent(MainActivity.this, AuthActivity.class);
                     startActivity(loginIntent);
@@ -528,13 +690,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void uploadAvatar(File file) {
+        showProgress();
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData("avatar", file.getName(), requestFile);
-        Call<UploadPhotoRes> call = mDataManager.getRestService().uploadPhoto(
+        Call<UploadPhotoRes> call = mDataManager.uploadAvatar(
                 mDataManager.getPreferencesManager().getUserId(), body);
         call.enqueue(new Callback<UploadPhotoRes>() {
             @Override
             public void onResponse(Call<UploadPhotoRes> call, Response<UploadPhotoRes> response) {
+                hideProgress();
                 if (response.code() == 404) {
                     Intent loginIntent = new Intent(MainActivity.this, AuthActivity.class);
                     startActivity(loginIntent);
@@ -566,38 +730,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         return new File(filePath);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == ConstantManager.CAMERA_PERMISSION_REQUEST_CODE && grantResults.length == 2) {
-            if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                showToast(getString(R.string.need_camera_permission));
-            }
-            if (grantResults[1] == PackageManager.PERMISSION_DENIED) {
-                showToast(getString(R.string.need_write_permission));
-            }
-        }
-    }
-
-    private void hideProfilePlaceholder() {
-        mProfilePlaceholder.setVisibility(View.GONE);
-    }
-
-    private void showProfilePlaceholder() {
-        mProfilePlaceholder.setVisibility(View.VISIBLE);
-    }
-
-    private void lockToolbar() {
-        //mAppBarLayout.setExpanded(true, true);
-        mAppBarParams.setScrollFlags(0);
-        mCollapsingToolbar.setLayoutParams(mAppBarParams);
-    }
-
-    private void unlockToolbar() {
-        mAppBarParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
-                | AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED);
-        mCollapsingToolbar.setLayoutParams(mAppBarParams);
-    }
-
     private File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
@@ -623,34 +755,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mDataManager.getPreferencesManager().saveUserPhoto(selectedImage);
     }
 
+    private void insertAvatarImage(Uri selectedImage) {
+        mDataManager.getPreferencesManager().saveUserAvatar(selectedImage);
+    }
+
     private void openApplicationSettings() {
         Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
         startActivityForResult(appSettingsIntent, ConstantManager.PERMISSION_REQUEST_SETTINGS_CODE);
-    }
-
-    private void hideEtErrors() {
-        for (int i = 0; i < mUserInfoEdits.size(); ++i) {
-            EditText editText = mUserInfoEdits.get(i);
-            if (mTextWatchers != null)
-                editText.removeTextChangedListener(mTextWatchers.get(i));
-            ((TextInputLayout) editText.getParent()).setError(null);
-            ((TextInputLayout) editText.getParent()).setErrorEnabled(false);
-        }
-        mTextWatchers = null;
-    }
-
-    private void showEtErrors() {
-        mTextWatchers = new ArrayList<>();
-        for (int i = 0; i < mUserInfoEdits.size(); ++i) {
-            mTextWatchers.add(i,
-                    new EditTextWatcher(
-                            this,
-                            mUserInfoEdits.get(i),
-                            mUserInfoImages.get(i),
-                            (TextInputLayout) mUserInfoEdits.get(i).getParent()
-                    )
-            );
-            mUserInfoEdits.get(i).addTextChangedListener(mTextWatchers.get(i));
-        }
     }
 }

@@ -17,7 +17,8 @@
     <string name="exit">Выход</string>
 
     <string name="image_placeholder">Изменить фотографию профиля</string>
-    <string name="user_profile.dialog.title">Изменить фотографию профиля</string>
+    <string name="user_profile.dialog.photo.title">Изменить фотографию профиля</string>
+    <string name="user_profile.dialog.avatar.title">Изменить аватар</string>
     <string name="user_profile.dialog.gallery">Загрузить из галлереи</string>
     <string name="user_profile.dialog.camera">Сделать снимок</string>
     <string name="user_profile.dialog.cancel">Отмена</string>
