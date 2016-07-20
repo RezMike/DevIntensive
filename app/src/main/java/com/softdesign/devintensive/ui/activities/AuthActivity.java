@@ -92,6 +92,7 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
      */
     @Subscribe
     public void answerError(String error) {
+        hideProgress();
         if (mLoginEt == null) {
             setContentView(R.layout.activity_auth);
 
@@ -162,7 +163,6 @@ public class AuthActivity extends BaseActivity implements View.OnClickListener {
             @Override
             public void onResponse(Call<UserInfoRes> call, Response<UserInfoRes> response) {
                 if (response.code() == 200) {
-                    Log.d(TAG, "onResponse: error");
                     loginSuccess(response.body().getData());
                 }
             }

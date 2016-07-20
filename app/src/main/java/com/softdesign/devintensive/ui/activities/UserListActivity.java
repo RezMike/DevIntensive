@@ -1,6 +1,5 @@
 package com.softdesign.devintensive.ui.activities;
 
-import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +15,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,8 +31,8 @@ import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.ui.custom.CustomClickListener;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
-import com.softdesign.devintensive.ui.fragments.UsersRetainedFragment;
 import com.softdesign.devintensive.utils.ConstantManager;
+import com.softdesign.devintensive.utils.ItemTouchHelperCallback;
 
 import java.util.List;
 
@@ -45,7 +45,6 @@ public class UserListActivity extends BaseActivity {
     private DataManager mDataManager;
     private UsersAdapter mUsersAdapter;
     private List<User> mUsers;
-    private UsersRetainedFragment mRetainedFragment;
     private ChronosConnector mConnector;
 
     @BindView(R.id.main_coordinator_container)
@@ -69,12 +68,9 @@ public class UserListActivity extends BaseActivity {
 
         mDataManager = DataManager.getInstance();
 
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 1);
-        mRecyclerView.setLayoutManager(gridLayoutManager);
-
         setupToolbar();
         setupDrawer();
-        initUsers();
+        loadUsersFromDb();
     }
 
     @Override
@@ -90,12 +86,19 @@ public class UserListActivity extends BaseActivity {
     }
 
     @Override
+    protected void onStop() {
+        if (mUsersAdapter != null && mUsersAdapter.getRemovalUsers() != null) {
+            List<User> removalUsers = mUsersAdapter.getRemovalUsers();
+            for (User user : removalUsers) {
+                user.delete();
+            }
+        }
+        super.onStop();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mUsersAdapter != null && mRetainedFragment != null) {
-            mRetainedFragment.setUsers(mUsersAdapter.getUsers());
-            mRetainedFragment.setFilteredUsers(mUsersAdapter.getFilteredUsers());
-        }
     }
 
     @Override
@@ -139,6 +142,11 @@ public class UserListActivity extends BaseActivity {
         mConnector.onSaveInstanceState(outState);
     }
 
+    /**
+     * Вызывается после загрузки данных из базы данных
+     *
+     * @param result - результат выполнения
+     */
     public void onOperationFinished(final LoadUserDataOperation.Result result) {
         mUsers = result.getOutput();
         if (mUsers.size() == 0) {
@@ -154,10 +162,18 @@ public class UserListActivity extends BaseActivity {
                 }
             });
             mRecyclerView.setAdapter(mUsersAdapter);
-            mRetainedFragment.setUsers(mUsersAdapter.getUsers());
-            mRetainedFragment.setFilteredUsers(mUsersAdapter.getFilteredUsers());
         }
         hideProgress();
+        setupAdapters();
+    }
+
+    private void setupAdapters() {
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 1);
+        mRecyclerView.setLayoutManager(gridLayoutManager);
+
+        ItemTouchHelper.Callback callback = new ItemTouchHelperCallback(mUsersAdapter);
+        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+        touchHelper.attachToRecyclerView(mRecyclerView);
     }
 
     private void showSnackBar(String massage) {
@@ -221,29 +237,6 @@ public class UserListActivity extends BaseActivity {
             mConnector.runOperation(new LoadUserDataOperation(), false);
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private void initUsers() {
-        FragmentManager fm = getFragmentManager();
-        mRetainedFragment = (UsersRetainedFragment) fm.findFragmentByTag("users_data");
-        if (mRetainedFragment == null) {
-            mRetainedFragment = new UsersRetainedFragment();
-            fm.beginTransaction().add(mRetainedFragment, "users_data").commit();
-            loadUsersFromDb();
-        } else {
-            mUsers = mRetainedFragment.getUsers();
-            mUsersAdapter = new UsersAdapter(mUsers, new CustomClickListener() {
-                @Override
-                public void onUserItemClickListener(int position) {
-                    UserDTO userDTO = new UserDTO(mUsers.get(position));
-                    Intent profileIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
-                    profileIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
-                    startActivity(profileIntent);
-                }
-            });
-            mRecyclerView.setAdapter(mUsersAdapter);
-            mUsersAdapter.setFilteredUsers(mRetainedFragment.getFilteredUsers());
         }
     }
 }

@@ -41,12 +41,14 @@ public class User {
 
     private String bio;
 
+    private Long index;
+
     @ToMany(joinProperties = {
             @JoinProperty(name = "remoteId", referencedName = "userRemoteId")
     })
     private List<Repository> repositories;
 
-    public User(UserListRes.Data userRes) {
+    public User(UserListRes.Data userRes, Long number) {
         remoteId = userRes.getId();
         photo = userRes.getPublicInfo().getPhoto();
         fullName = userRes.getFullName();
@@ -55,6 +57,7 @@ public class User {
         codeLines = userRes.getProfileValues().getLinesCode();
         projects = userRes.getProfileValues().getProjects();
         bio = userRes.getPublicInfo().getBio();
+        index = number;
     }
 
     /**
@@ -216,10 +219,18 @@ public class User {
         this.id = id;
     }
 
-    @Generated(hash = 1023608416)
-    public User(Long id, @NotNull String remoteId, String photo,
-                @NotNull String fullName, @NotNull String searchName, int rating,
-                int codeLines, int projects, String bio) {
+    public Long getIndex() {
+        return this.index;
+    }
+
+    public void setIndex(Long index) {
+        this.index = index;
+    }
+
+    @Generated(hash = 1383148935)
+    public User(Long id, @NotNull String remoteId, String photo, @NotNull String fullName,
+                @NotNull String searchName, int rating, int codeLines, int projects, String bio,
+                Long index) {
         this.id = id;
         this.remoteId = remoteId;
         this.photo = photo;
@@ -229,6 +240,7 @@ public class User {
         this.codeLines = codeLines;
         this.projects = projects;
         this.bio = bio;
+        this.index = index;
     }
 
     @Generated(hash = 586692638)

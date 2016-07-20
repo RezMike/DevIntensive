@@ -34,9 +34,16 @@ public class SaveUserDataOperation extends ChronosOperation<String> {
         List<Repository> allRepositories = new ArrayList<>();
         List<User> allUsers = new ArrayList<>();
 
+        long index = 0;
+
         for (UserListRes.Data userRes : mResponse.body().getData()) {
+            index += 1;
+            long number = index;
+            User user = dataManager.getDaoSession().queryBuilder(User.class)
+                    .where(UserDao.Properties.RemoteId.eq(userRes.getId())).build().unique();
+            if (user != null) number = user.getIndex();
             allRepositories.addAll(getRepoListFromUserRes(userRes));
-            allUsers.add(new User(userRes));
+            allUsers.add(new User(userRes, number));
         }
 
         repositoryDao.insertOrReplaceInTx(allRepositories);

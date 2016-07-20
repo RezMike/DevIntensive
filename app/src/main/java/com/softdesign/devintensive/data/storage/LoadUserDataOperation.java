@@ -17,7 +17,7 @@ public class LoadUserDataOperation extends ChronosOperation<List<User>> {
     public List<User> run() {
         return DevintensiveApplication.getDaoSession().queryBuilder(User.class)
                 .where(UserDao.Properties.CodeLines.gt(0))
-                .orderDesc(UserDao.Properties.Rating)
+                .orderAsc(UserDao.Properties.Index)
                 .build()
                 .list();
     }

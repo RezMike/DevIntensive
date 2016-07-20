@@ -30,6 +30,9 @@
     <string name="need_write_permission">Необходимо разрешение на запись!</string>
     <string name="permit">Разрешить</string>
 
+    <string name="user_deleted_from_list">Пользователь %1$s\nудален из списка</string>
+    <string name="revert"><u>Восстановить</u></string>
+
     <string name="choose_email_client">Выберите e-mail клиент:</string>
     <string name="choose_browser">Выберите браузер:</string>
     <string name="enter_user_name">Введите имя пользователя</string>
