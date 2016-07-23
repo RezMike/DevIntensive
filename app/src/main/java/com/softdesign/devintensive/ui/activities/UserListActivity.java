@@ -1,9 +1,11 @@
 package com.softdesign.devintensive.ui.activities;
 
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -31,6 +33,7 @@ import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.ui.custom.CustomClickListener;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
+import com.softdesign.devintensive.ui.fragments.SearchRetainedFragment;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.ItemTouchHelperCallback;
 
@@ -46,6 +49,8 @@ public class UserListActivity extends BaseActivity {
     private UsersAdapter mUsersAdapter;
     private List<User> mUsers;
     private ChronosConnector mConnector;
+    private SearchRetainedFragment mRetainedFragment;
+    private Parcelable mSavedState;
 
     @BindView(R.id.main_coordinator_container)
     CoordinatorLayout mCoordinatorLayout;
@@ -70,6 +75,9 @@ public class UserListActivity extends BaseActivity {
 
         setupToolbar();
         setupDrawer();
+        if (savedInstanceState != null) {
+            mSavedState = savedInstanceState.getParcelable(ConstantManager.SAVED_STATE_KEY);
+        }
         loadUsersFromDb();
     }
 
@@ -113,6 +121,7 @@ public class UserListActivity extends BaseActivity {
                 if (mUsersAdapter != null) {
                     mUsersAdapter.getFilter().filter(query);
                 }
+                mRetainedFragment.setSearchQuery(query);
                 return true;
             }
 
@@ -121,6 +130,7 @@ public class UserListActivity extends BaseActivity {
                 if (mUsersAdapter != null) {
                     mUsersAdapter.getFilter().filter(newText);
                 }
+                mRetainedFragment.setSearchQuery(newText);
                 return true;
             }
         });
@@ -140,6 +150,17 @@ public class UserListActivity extends BaseActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         mConnector.onSaveInstanceState(outState);
+        outState.putParcelable(ConstantManager.SAVED_STATE_KEY,
+                mRecyclerView.getLayoutManager().onSaveInstanceState());
+    }
+
+    private void loadUsersFromDb() {
+        try {
+            showProgress();
+            mConnector.runOperation(new LoadUserDataOperation(), false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -165,6 +186,7 @@ public class UserListActivity extends BaseActivity {
         }
         hideProgress();
         setupAdapters();
+        loadSearchQuery();
     }
 
     private void setupAdapters() {
@@ -174,6 +196,25 @@ public class UserListActivity extends BaseActivity {
         ItemTouchHelper.Callback callback = new ItemTouchHelperCallback(mUsersAdapter);
         ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
         touchHelper.attachToRecyclerView(mRecyclerView);
+
+        mRecyclerView.getLayoutManager().onRestoreInstanceState(mSavedState);
+    }
+
+    /**
+     * Загрузка запроса на поиск в списке после поворота экрана при поиске
+     */
+    private void loadSearchQuery() {
+        FragmentManager fm = getFragmentManager();
+        mRetainedFragment = (SearchRetainedFragment) fm.findFragmentByTag(ConstantManager.RETAINED_FRAGMENT_KEY);
+        if (mRetainedFragment == null) {
+            mRetainedFragment = new SearchRetainedFragment();
+            fm.beginTransaction().add(mRetainedFragment, ConstantManager.RETAINED_FRAGMENT_KEY).commit();
+        } else {
+            String searchQuery = mRetainedFragment.getSearchQuery();
+            if (searchQuery != null && !searchQuery.isEmpty()) {
+                mUsersAdapter.getFilter().filter(searchQuery);
+            }
+        }
     }
 
     private void showSnackBar(String massage) {
@@ -229,14 +270,5 @@ public class UserListActivity extends BaseActivity {
         Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.avatar);
         RoundedDrawable roundedDrawable = new RoundedDrawable(bitmap);
         avatarImg.setImageDrawable(roundedDrawable);
-    }
-
-    private void loadUsersFromDb() {
-        try {
-            showProgress();
-            mConnector.runOperation(new LoadUserDataOperation(), false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }
