@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.support.design.widget.CollapsingToolbarLayout;
+import android.os.Parcelable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -17,39 +17,40 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.redmadrobot.chronos.ChronosConnector;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
-import com.softdesign.devintensive.data.network.responses.UserListRes;
+import com.softdesign.devintensive.data.storage.LoadUserDataOperation;
+import com.softdesign.devintensive.data.storage.models.User;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.ui.custom.CustomClickListener;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
-import com.softdesign.devintensive.ui.fragments.UsersRetainedFragment;
+import com.softdesign.devintensive.ui.fragments.SearchRetainedFragment;
 import com.softdesign.devintensive.utils.ConstantManager;
-import com.softdesign.devintensive.utils.NetworkStatusChecker;
+import com.softdesign.devintensive.utils.ItemTouchHelperCallback;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
-public class UserListActivity extends BaseActivity implements SearchView.OnQueryTextListener {
+public class UserListActivity extends BaseActivity {
     private static final String TAG = ConstantManager.TAG_PREFIX + "UserListActivity";
 
     private DataManager mDataManager;
     private UsersAdapter mUsersAdapter;
-    private List<UserListRes.Data> mUsers;
-    private UsersRetainedFragment mRetainedFragment;
+    private List<User> mUsers;
+    private ChronosConnector mConnector;
+    private SearchRetainedFragment mRetainedFragment;
+    private Parcelable mSavedState;
 
     @BindView(R.id.main_coordinator_container)
     CoordinatorLayout mCoordinatorLayout;
@@ -67,24 +68,45 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_list);
         ButterKnife.bind(this);
+        mConnector = new ChronosConnector();
+        mConnector.onCreate(this, savedInstanceState);
 
         mDataManager = DataManager.getInstance();
 
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 1);
-        mRecyclerView.setLayoutManager(gridLayoutManager);
-
         setupToolbar();
         setupDrawer();
-        initUsersData();
+        if (savedInstanceState != null) {
+            mSavedState = savedInstanceState.getParcelable(ConstantManager.SAVED_STATE_KEY);
+        }
+        loadUsersFromDb();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mConnector.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mConnector.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        if (mUsersAdapter != null && mUsersAdapter.getRemovalUsers() != null) {
+            List<User> removalUsers = mUsersAdapter.getRemovalUsers();
+            for (User user : removalUsers) {
+                user.delete();
+            }
+        }
+        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mUsersAdapter != null && mRetainedFragment != null) {
-            mRetainedFragment.setUsers(mUsersAdapter.getUsers());
-            mRetainedFragment.setFilteredUsers(mUsersAdapter.getFilteredUsers());
-        }
     }
 
     @Override
@@ -92,7 +114,26 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
         getMenuInflater().inflate(R.menu.search_menu, menu);
         MenuItem searchItem = menu.findItem(R.id.search_menu);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-        searchView.setOnQueryTextListener(this);
+        searchView.setQueryHint(getString(R.string.enter_user_name));
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if (mUsersAdapter != null) {
+                    mUsersAdapter.getFilter().filter(query);
+                }
+                mRetainedFragment.setSearchQuery(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (mUsersAdapter != null) {
+                    mUsersAdapter.getFilter().filter(newText);
+                }
+                mRetainedFragment.setSearchQuery(newText);
+                return true;
+            }
+        });
         return true;
     }
 
@@ -106,19 +147,74 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
     }
 
     @Override
-    public boolean onQueryTextSubmit(String query) {
-        if (mUsersAdapter != null) {
-            mUsersAdapter.getFilter().filter(query);
-        }
-        return true;
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mConnector.onSaveInstanceState(outState);
+        outState.putParcelable(ConstantManager.SAVED_STATE_KEY,
+                mRecyclerView.getLayoutManager().onSaveInstanceState());
     }
 
-    @Override
-    public boolean onQueryTextChange(String newText) {
-        if (mUsersAdapter != null) {
-            mUsersAdapter.getFilter().filter(newText);
+    private void loadUsersFromDb() {
+        try {
+            showProgress();
+            mConnector.runOperation(new LoadUserDataOperation(), false);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return true;
+    }
+
+    /**
+     * Вызывается после загрузки данных из базы данных
+     *
+     * @param result - результат выполнения
+     */
+    public void onOperationFinished(final LoadUserDataOperation.Result result) {
+        mUsers = result.getOutput();
+        if (mUsers.size() == 0) {
+            showSnackBar(getString(R.string.error_load_users_list));
+        } else {
+            mUsersAdapter = new UsersAdapter(mUsers, new CustomClickListener() {
+                @Override
+                public void onUserItemClickListener(int position) {
+                    UserDTO userDTO = new UserDTO(mUsers.get(position));
+                    Intent profileIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
+                    profileIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
+                    startActivity(profileIntent);
+                }
+            });
+            mRecyclerView.setAdapter(mUsersAdapter);
+        }
+        hideProgress();
+        setupAdapters();
+        loadSearchQuery();
+    }
+
+    private void setupAdapters() {
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 1);
+        mRecyclerView.setLayoutManager(gridLayoutManager);
+
+        ItemTouchHelper.Callback callback = new ItemTouchHelperCallback(mUsersAdapter);
+        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+        touchHelper.attachToRecyclerView(mRecyclerView);
+
+        mRecyclerView.getLayoutManager().onRestoreInstanceState(mSavedState);
+    }
+
+    /**
+     * Загрузка запроса на поиск в списке после поворота экрана при поиске
+     */
+    private void loadSearchQuery() {
+        FragmentManager fm = getFragmentManager();
+        mRetainedFragment = (SearchRetainedFragment) fm.findFragmentByTag(ConstantManager.RETAINED_FRAGMENT_KEY);
+        if (mRetainedFragment == null) {
+            mRetainedFragment = new SearchRetainedFragment();
+            fm.beginTransaction().add(mRetainedFragment, ConstantManager.RETAINED_FRAGMENT_KEY).commit();
+        } else {
+            String searchQuery = mRetainedFragment.getSearchQuery();
+            if (searchQuery != null && !searchQuery.isEmpty()) {
+                mUsersAdapter.getFilter().filter(searchQuery);
+            }
+        }
     }
 
     private void showSnackBar(String massage) {
@@ -174,72 +270,5 @@ public class UserListActivity extends BaseActivity implements SearchView.OnQuery
         Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.avatar);
         RoundedDrawable roundedDrawable = new RoundedDrawable(bitmap);
         avatarImg.setImageDrawable(roundedDrawable);
-    }
-
-    private void loadUsersData() {
-        showProgress();
-        Call<UserListRes> call = mDataManager.getUserList();
-        call.enqueue(new Callback<UserListRes>() {
-            @Override
-            public void onResponse(Call<UserListRes> call, final Response<UserListRes> response) {
-                hideProgress();
-                if (response.code() == 404) {
-                    Intent loginIntent = new Intent(UserListActivity.this, AuthActivity.class);
-                    startActivity(loginIntent);
-                    UserListActivity.this.finish();
-                }
-                try {
-                    mUsers = response.body().getData();
-                    mUsersAdapter = new UsersAdapter(mUsers, new CustomClickListener() {
-                        @Override
-                        public void onUserItemClickListener(int position) {
-                            UserDTO userDTO = new UserDTO(mUsers.get(position));
-                            Intent profileIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
-                            profileIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
-                            startActivity(profileIntent);
-                        }
-                    });
-                    mRecyclerView.setAdapter(mUsersAdapter);
-                    mRetainedFragment.setUsers(mUsersAdapter.getUsers());
-                    mRetainedFragment.setFilteredUsers(mUsersAdapter.getFilteredUsers());
-                } catch (NullPointerException e) {
-                    Log.e(TAG, e.toString());
-                    showSnackBar(getString(R.string.error_all_bad));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<UserListRes> call, Throwable t) {
-                hideProgress();
-                if (!NetworkStatusChecker.isNetworkAvailable(UserListActivity.this)) {
-                    showSnackBar(getString(R.string.error_network_not_available));
-                } else {
-                    showSnackBar(getString(R.string.error_all_bad));
-                }
-            }
-        });
-    }
-
-    private void initUsersData() {
-        FragmentManager fm = getFragmentManager();
-        mRetainedFragment = (UsersRetainedFragment) fm.findFragmentByTag("users_data");
-        if (mRetainedFragment == null) {
-            mRetainedFragment = new UsersRetainedFragment();
-            fm.beginTransaction().add(mRetainedFragment, "users_data").commit();
-            loadUsersData();
-        } else {
-            mUsers = mRetainedFragment.getUsers();
-            mUsersAdapter = new UsersAdapter(mUsers, new CustomClickListener() {
-                @Override
-                public void onUserItemClickListener(int position) {
-                    UserDTO userDTO = new UserDTO(mUsers.get(position));
-                    Intent profileIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
-                    profileIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
-                    startActivity(profileIntent);
-                }
-            });
-            mRecyclerView.setAdapter(mUsersAdapter);
-            mUsersAdapter.setFilteredUsers(mRetainedFragment.getFilteredUsers());
-        }
     }
 }

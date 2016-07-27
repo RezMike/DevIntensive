@@ -84,7 +84,7 @@ public class PreferencesManager {
 
     public Uri loadUserAvatar() {
         return Uri.parse(mSharedPreferences.getString(ConstantManager.USER_AVATAR_KEY,
-                "android.resource://com.softdesign.devintensive/" + R.drawable.avatar));
+                "android.resource://com.softdesign.devintensive/" + R.mipmap.ic_launcher));
     }
 
     public String getUserProfileField(String field) {

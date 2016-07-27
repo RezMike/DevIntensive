@@ -9,7 +9,7 @@
     android:paddingBottom="@dimen/spacing_small_8"
     android:background="@drawable/nav_header_bg">
 
-    <ImageView
+    <com.softdesign.devintensive.ui.views.CircleImageView
         android:id="@+id/avatar"
         android:layout_width="60dp"
         android:layout_height="60dp"

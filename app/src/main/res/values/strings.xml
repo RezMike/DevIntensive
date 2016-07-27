@@ -17,7 +17,8 @@
     <string name="exit">Выход</string>
 
     <string name="image_placeholder">Изменить фотографию профиля</string>
-    <string name="user_profile.dialog.title">Изменить фотографию профиля</string>
+    <string name="user_profile.dialog.photo.title">Изменить фотографию профиля</string>
+    <string name="user_profile.dialog.avatar.title">Изменить аватар</string>
     <string name="user_profile.dialog.gallery">Загрузить из галлереи</string>
     <string name="user_profile.dialog.camera">Сделать снимок</string>
     <string name="user_profile.dialog.cancel">Отмена</string>
@@ -29,8 +30,12 @@
     <string name="need_write_permission">Необходимо разрешение на запись!</string>
     <string name="permit">Разрешить</string>
 
+    <string name="user_deleted_from_list">Пользователь %1$s\nудален из списка</string>
+    <string name="revert"><u>Восстановить</u></string>
+
     <string name="choose_email_client">Выберите e-mail клиент:</string>
     <string name="choose_browser">Выберите браузер:</string>
+    <string name="enter_user_name">Введите имя пользователя</string>
 
     <string name="auth_enter">Войти</string>
     <string name="auth_email_hint">E-mail</string>
@@ -45,4 +50,5 @@
     <string name="error_network_not_available">Сеть на данный момент не доступна, попробуйте позже</string>
     <string name="error_wrong_login_or_password">Неверный логин или пароль</string>
     <string name="error_all_bad">Что-то пошло не так!</string>
+    <string name="error_load_users_list">Список пользователей не может быть получен</string>
 </resources>

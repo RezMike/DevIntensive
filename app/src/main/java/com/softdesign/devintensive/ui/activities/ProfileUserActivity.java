@@ -79,21 +79,19 @@ public class ProfileUserActivity extends BaseActivity {
         mRepoListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String gitAddress = (String)repositoriesAdapter.getItem(position);
-                if (gitAddress.contains("http://")){
+                String gitAddress = (String) repositoriesAdapter.getItem(position);
+                if (gitAddress.contains("http://")) {
                     gitAddress = gitAddress.replaceAll("http://", "");
                 }
-                if (gitAddress.contains("https://")){
+                if (gitAddress.contains("https://")) {
                     gitAddress = gitAddress.replaceAll("https://", "");
                 }
-                if (!gitAddress.equals("")){
+                if (!gitAddress.equals("")) {
                     Intent mGitIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + gitAddress));
                     startActivity(Intent.createChooser(mGitIntent, getString(R.string.choose_browser)));
                 }
             }
         });
-
-        Log.d("", 76 + "");
 
         mUserBio.setText(userDTO.getBio());
         mUserRating.setText(userDTO.getRating());
@@ -103,13 +101,14 @@ public class ProfileUserActivity extends BaseActivity {
         mCollapsingToolbar.setTitle(userDTO.getFullName());
 
         String photoPath = userDTO.getPhoto();
-        if (!photoPath.isEmpty()) {
-            Picasso.with(this)
-                    .load(photoPath)
-                    .placeholder(R.drawable.user_bg)
-                    .error(R.drawable.user_bg)
-                    .into(mProfileImage);
+        if (photoPath.isEmpty()) {
+            photoPath = "null";
         }
+        Picasso.with(this)
+                .load(photoPath)
+                .placeholder(R.drawable.user_bg)
+                .error(R.drawable.user_bg)
+                .into(mProfileImage);
 
         setMaxHeightOfListView(mRepoListView);
     }
