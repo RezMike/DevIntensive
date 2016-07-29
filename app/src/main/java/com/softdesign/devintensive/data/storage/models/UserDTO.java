@@ -3,9 +3,6 @@ package com.softdesign.devintensive.data.storage.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.softdesign.devintensive.data.network.responses.UserInfoRes;
-import com.softdesign.devintensive.data.network.responses.UserListRes;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,9 +14,11 @@ public class UserDTO implements Parcelable {
     private String mProjects;
     private String mBio;
     private List<String> mRepositories;
+    private List<String> mLikes;
 
     public UserDTO(User userData) {
         List<String> repoLink = new ArrayList<>();
+        List<String> likeIds = new ArrayList<>();
 
         mPhoto = userData.getPhoto();
         mFullName = userData.getFullName();
@@ -32,6 +31,11 @@ public class UserDTO implements Parcelable {
             repoLink.add(gitLink.getRepositoryName());
         }
         mRepositories = repoLink;
+
+        for (Like like : userData.getLikes()) {
+            likeIds.add(like.getLikedUserId());
+        }
+        mLikes = likeIds;
     }
 
     protected UserDTO(Parcel in) {
@@ -46,6 +50,12 @@ public class UserDTO implements Parcelable {
             in.readList(mRepositories, String.class.getClassLoader());
         } else {
             mRepositories = null;
+        }
+        if (in.readByte() == 0x01) {
+            mLikes = new ArrayList<String>();
+            in.readList(mLikes, String.class.getClassLoader());
+        } else {
+            mLikes = null;
         }
     }
 
@@ -67,6 +77,12 @@ public class UserDTO implements Parcelable {
         } else {
             dest.writeByte((byte) (0x01));
             dest.writeList(mRepositories);
+        }
+        if (mLikes == null) {
+            dest.writeByte((byte) (0x00));
+        } else {
+            dest.writeByte((byte) (0x01));
+            dest.writeList(mLikes);
         }
     }
 
@@ -108,5 +124,9 @@ public class UserDTO implements Parcelable {
 
     public List<String> getRepositories() {
         return mRepositories;
+    }
+
+    public List<String> getLikes() {
+        return mLikes;
     }
 }

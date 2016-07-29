@@ -11,6 +11,7 @@
     <string name="repository_hint">Репозиторий</string>
     <string name="about_hint">О себе</string>
     <string name="review">Просмотр</string>
+    <string name="zero">0</string>
 
     <string name="my_profile">Мой профиль</string>
     <string name="team">Команда</string>
