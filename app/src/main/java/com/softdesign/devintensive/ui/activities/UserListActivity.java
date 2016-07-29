@@ -93,6 +93,9 @@ public class UserListActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         mConnector.onResume();
+        if (mUsersAdapter != null) {
+            mUsersAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -110,11 +113,6 @@ public class UserListActivity extends BaseActivity {
             }
         }
         super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 
     @Override
@@ -298,7 +296,7 @@ public class UserListActivity extends BaseActivity {
             public void onResponse(Call<UserLikeRes> call, Response<UserLikeRes> response) {
                 if (response.code() == 200) {
                     UserInfoRes.ProfileValues data = response.body().getData();
-                    user.setRating(data.getRating());
+                    user.setRating(data.getFullRating());
                     user.setCodeLines(data.getLinesCode());
                     user.setProjects(data.getProjects());
 
@@ -338,7 +336,7 @@ public class UserListActivity extends BaseActivity {
             public void onResponse(Call<UserLikeRes> call, Response<UserLikeRes> response) {
                 if (response.code() == 200) {
                     UserInfoRes.ProfileValues data = response.body().getData();
-                    user.setRating(data.getRating());
+                    user.setRating(data.getFullRating());
                     user.setCodeLines(data.getLinesCode());
                     user.setProjects(data.getProjects());
 

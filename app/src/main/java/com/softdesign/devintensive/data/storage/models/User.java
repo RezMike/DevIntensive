@@ -33,6 +33,8 @@ public class User {
     @Unique
     private String searchName;
 
+    private int fullRating;
+
     private int rating;
 
     private int codeLines;
@@ -58,6 +60,7 @@ public class User {
         photo = userRes.getPublicInfo().getPhoto();
         fullName = userRes.getFullName();
         searchName = userRes.getFullName().toUpperCase();
+        fullRating = userRes.getProfileValues().getFullRating();
         rating = userRes.getProfileValues().getRating();
         codeLines = userRes.getProfileValues().getLinesCode();
         projects = userRes.getProfileValues().getProjects();
@@ -214,6 +217,14 @@ public class User {
         this.rating = rating;
     }
 
+    public int getFullRating() {
+        return this.fullRating;
+    }
+
+    public void setFullRating(int fullRating) {
+        this.fullRating = fullRating;
+    }
+
     public String getSearchName() {
         return this.searchName;
     }
@@ -262,15 +273,16 @@ public class User {
         this.index = index;
     }
 
-    @Generated(hash = 1383148935)
+    @Generated(hash = 459023621)
     public User(Long id, @NotNull String remoteId, String photo, @NotNull String fullName,
-                @NotNull String searchName, int rating, int codeLines, int projects, String bio,
-                Long index) {
+                @NotNull String searchName, int fullRating, int rating, int codeLines, int projects,
+                String bio, Long index) {
         this.id = id;
         this.remoteId = remoteId;
         this.photo = photo;
         this.fullName = fullName;
         this.searchName = searchName;
+        this.fullRating = fullRating;
         this.rating = rating;
         this.codeLines = codeLines;
         this.projects = projects;

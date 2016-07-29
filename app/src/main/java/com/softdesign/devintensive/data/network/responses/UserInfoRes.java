@@ -174,11 +174,11 @@ public class UserInfoRes {
             return likesBy;
         }
 
-        public int getRait() {
+        public int getRating() {
             return rait;
         }
 
-        public int getRating() {
+        public int getFullRating() {
             return rating;
         }
     }

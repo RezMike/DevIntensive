@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDTO implements Parcelable {
+    private String mRemoteId;
     private String mPhoto;
     private String mFullName;
     private String mRating;
@@ -14,15 +15,14 @@ public class UserDTO implements Parcelable {
     private String mProjects;
     private String mBio;
     private List<String> mRepositories;
-    private List<String> mLikes;
 
     public UserDTO(User userData) {
         List<String> repoLink = new ArrayList<>();
-        List<String> likeIds = new ArrayList<>();
 
+        mRemoteId = userData.getRemoteId();
         mPhoto = userData.getPhoto();
         mFullName = userData.getFullName();
-        mRating = String.valueOf(userData.getRating());
+        mRating = String.valueOf(userData.getFullRating());
         mCodeLines = String.valueOf(userData.getCodeLines());
         mProjects = String.valueOf(userData.getProjects());
         mBio = String.valueOf(userData.getBio());
@@ -31,14 +31,10 @@ public class UserDTO implements Parcelable {
             repoLink.add(gitLink.getRepositoryName());
         }
         mRepositories = repoLink;
-
-        for (Like like : userData.getLikes()) {
-            likeIds.add(like.getLikedUserId());
-        }
-        mLikes = likeIds;
     }
 
     protected UserDTO(Parcel in) {
+        mRemoteId = in.readString();
         mPhoto = in.readString();
         mFullName = in.readString();
         mRating = in.readString();
@@ -51,12 +47,6 @@ public class UserDTO implements Parcelable {
         } else {
             mRepositories = null;
         }
-        if (in.readByte() == 0x01) {
-            mLikes = new ArrayList<String>();
-            in.readList(mLikes, String.class.getClassLoader());
-        } else {
-            mLikes = null;
-        }
     }
 
     @Override
@@ -66,6 +56,7 @@ public class UserDTO implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mRemoteId);
         dest.writeString(mPhoto);
         dest.writeString(mFullName);
         dest.writeString(mRating);
@@ -77,12 +68,6 @@ public class UserDTO implements Parcelable {
         } else {
             dest.writeByte((byte) (0x01));
             dest.writeList(mRepositories);
-        }
-        if (mLikes == null) {
-            dest.writeByte((byte) (0x00));
-        } else {
-            dest.writeByte((byte) (0x01));
-            dest.writeList(mLikes);
         }
     }
 
@@ -97,6 +82,10 @@ public class UserDTO implements Parcelable {
             return new UserDTO[size];
         }
     };
+
+    public String getRemoteId() {
+        return mRemoteId;
+    }
 
     public String getPhoto() {
         return mPhoto;
@@ -124,9 +113,5 @@ public class UserDTO implements Parcelable {
 
     public List<String> getRepositories() {
         return mRepositories;
-    }
-
-    public List<String> getLikes() {
-        return mLikes;
     }
 }

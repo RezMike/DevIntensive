@@ -15,6 +15,8 @@ import com.softdesign.devintensive.data.storage.models.RepositoryDao;
 import com.softdesign.devintensive.data.storage.models.User;
 import com.softdesign.devintensive.data.storage.models.UserDao;
 
+import org.greenrobot.greendao.Property;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,11 +41,8 @@ public class SaveUserDataOperation extends ChronosOperation<String> {
         List<Like> allLikes = new ArrayList<>();
         List<User> allUsers = new ArrayList<>();
 
-        long index = 0;
-
         for (UserListRes.Data userRes : mResponse.body().getData()) {
-            index += 1;
-            long number = index;
+            long number = 0;
             User user = dataManager.getDaoSession().queryBuilder(User.class)
                     .where(UserDao.Properties.RemoteId.eq(userRes.getId())).build().unique();
             if (user != null) number = user.getIndex();
@@ -56,6 +55,8 @@ public class SaveUserDataOperation extends ChronosOperation<String> {
         repositoryDao.insertOrReplaceInTx(allRepositories);
         likeDao.insertOrReplaceInTx(allLikes);
         userDao.insertOrReplaceInTx(allUsers);
+
+        sortUserIndexesByProperty(UserDao.Properties.FullRating);
 
         return null;
     }
@@ -80,6 +81,22 @@ public class SaveUserDataOperation extends ChronosOperation<String> {
         }
 
         return likes;
+    }
+
+    private void sortUserIndexesByProperty(Property property) {
+        List<User> users = DataManager.getInstance().getDaoSession()
+                .queryBuilder(User.class)
+                .orderDesc(property)
+                .build()
+                .list();
+        long index = 0;
+        for (User user : users) {
+            index += 1;
+            if (user.getIndex() == 0) {
+                user.setIndex(index);
+                user.update();
+            }
+        }
     }
 
     @NonNull

@@ -124,7 +124,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
                     });
 
             holder.mFullName.setText(user.getFullName());
-            holder.mRating.setText(String.valueOf(user.getRating()));
+            holder.mRating.setText(String.valueOf(user.getFullRating()));
             holder.mCodeLines.setText(String.valueOf(user.getCodeLines()));
             holder.mProjects.setText(String.valueOf(user.getProjects()));
             holder.mLikesNumber.setText(String.valueOf(user.getLikes().size()));
