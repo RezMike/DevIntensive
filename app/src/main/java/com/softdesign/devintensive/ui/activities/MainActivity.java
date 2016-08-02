@@ -193,7 +193,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             changeEditMode(0);
             mCurrentEditMode = 0;
         } else {
-            super.onBackPressed();
+            moveTaskToBack(true);
         }
     }
 
@@ -382,6 +382,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         TextView userEmail = (TextView) headerLayout.findViewById(R.id.user_email_txt);
         userName.setText(mDataManager.getPreferencesManager().getUserName());
         userEmail.setText(mDataManager.getPreferencesManager().getEmail());
+
+        mNavigationView.setCheckedItem(R.id.user_profile_menu);
 
         CircleImageView avatarImg = (CircleImageView) headerLayout.findViewById(R.id.avatar);
         avatarImg.setOnClickListener(new View.OnClickListener() {
@@ -581,12 +583,28 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void loadPhotoFromGallery() {
-        Intent takeGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        takeGalleryIntent.setType("image/*");
-        startActivityForResult(
-                Intent.createChooser(takeGalleryIntent, getString(R.string.user_profile_choose_photo)),
-                ConstantManager.REQUEST_GALLERY_PHOTO
-        );
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            Intent takeGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            takeGalleryIntent.setType("image/*");
+            startActivityForResult(
+                    Intent.createChooser(takeGalleryIntent, getString(R.string.user_profile_choose_photo)),
+                    ConstantManager.REQUEST_GALLERY_PHOTO
+            );
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            }, ConstantManager.CAMERA_PERMISSION_REQUEST_CODE);
+            Snackbar.make(mCoordinatorLayout, R.string.give_permission,
+                    Snackbar.LENGTH_LONG)
+                    .setAction(R.string.permit, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            openApplicationSettings();
+                        }
+                    }).show();
+        }
     }
 
     private void loadPhotoFromCamera() {
@@ -620,12 +638,28 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void loadAvatarFromGallery() {
-        Intent takeGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        takeGalleryIntent.setType("image/*");
-        startActivityForResult(
-                Intent.createChooser(takeGalleryIntent, getString(R.string.user_profile_choose_photo)),
-                ConstantManager.REQUEST_GALLERY_AVATAR
-        );
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            Intent takeGalleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            takeGalleryIntent.setType("image/*");
+            startActivityForResult(
+                    Intent.createChooser(takeGalleryIntent, getString(R.string.user_profile_choose_photo)),
+                    ConstantManager.REQUEST_GALLERY_AVATAR
+            );
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            }, ConstantManager.CAMERA_PERMISSION_REQUEST_CODE);
+            Snackbar.make(mCoordinatorLayout, R.string.give_permission,
+                    Snackbar.LENGTH_LONG)
+                    .setAction(R.string.permit, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            openApplicationSettings();
+                        }
+                    }).show();
+        }
     }
 
     private void loadAvatarFromCamera() {

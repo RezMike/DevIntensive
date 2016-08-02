@@ -18,6 +18,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,20 +28,29 @@ import android.widget.TextView;
 import com.redmadrobot.chronos.ChronosConnector;
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
+import com.softdesign.devintensive.data.network.responses.UserInfoRes;
+import com.softdesign.devintensive.data.network.responses.UserLikeRes;
 import com.softdesign.devintensive.data.storage.LoadUserDataOperation;
+import com.softdesign.devintensive.data.storage.models.Like;
+import com.softdesign.devintensive.data.storage.models.LikeDao;
 import com.softdesign.devintensive.data.storage.models.User;
 import com.softdesign.devintensive.data.storage.models.UserDTO;
 import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.ui.custom.CustomClickListener;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
 import com.softdesign.devintensive.ui.fragments.SearchRetainedFragment;
+import com.softdesign.devintensive.ui.views.CircleImageView;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.ItemTouchHelperCallback;
+import com.softdesign.devintensive.utils.NetworkStatusChecker;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class UserListActivity extends BaseActivity {
     private static final String TAG = ConstantManager.TAG_PREFIX + "UserListActivity";
@@ -85,6 +95,9 @@ public class UserListActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         mConnector.onResume();
+        if (mUsersAdapter != null) {
+            mUsersAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -102,11 +115,6 @@ public class UserListActivity extends BaseActivity {
             }
         }
         super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 
     @Override
@@ -154,6 +162,15 @@ public class UserListActivity extends BaseActivity {
                 mRecyclerView.getLayoutManager().onSaveInstanceState());
     }
 
+    @Override
+    public void onBackPressed() {
+        if (mNavigationDrawer.isDrawerOpen(GravityCompat.START)) {
+            mNavigationDrawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     private void loadUsersFromDb() {
         try {
             showProgress();
@@ -175,11 +192,17 @@ public class UserListActivity extends BaseActivity {
         } else {
             mUsersAdapter = new UsersAdapter(mUsers, new CustomClickListener() {
                 @Override
-                public void onUserItemClickListener(int position) {
-                    UserDTO userDTO = new UserDTO(mUsers.get(position));
-                    Intent profileIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
-                    profileIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
-                    startActivity(profileIntent);
+                public void onUserItemClickListener(String action, int position) {
+                    if (action.equals(ConstantManager.START_PROFILE_ACTIVITY_KEY)) {
+                        UserDTO userDTO = new UserDTO(mUsers.get(position));
+                        Intent profileIntent = new Intent(UserListActivity.this, ProfileUserActivity.class);
+                        profileIntent.putExtra(ConstantManager.PARCELABLE_KEY, userDTO);
+                        startActivity(profileIntent);
+                    } else if (action.equals(ConstantManager.LIKE_USER_KEY)) {
+                        likeUser(position);
+                    } else if (action.equals(ConstantManager.UNLIKE_USER_KEY)) {
+                        unlikeUser(position);
+                    }
                 }
             });
             mRecyclerView.setAdapter(mUsersAdapter);
@@ -240,6 +263,8 @@ public class UserListActivity extends BaseActivity {
         userName.setText(mDataManager.getPreferencesManager().getUserName());
         userEmail.setText(mDataManager.getPreferencesManager().getEmail());
 
+        mNavigationView.setCheckedItem(R.id.team_menu);
+
         setRoundedAvatar();
 
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -266,9 +291,107 @@ public class UserListActivity extends BaseActivity {
 
     private void setRoundedAvatar() {
         View headerLayout = mNavigationView.getHeaderView(0);
-        ImageView avatarImg = (ImageView) headerLayout.findViewById(R.id.avatar);
-        Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.avatar);
-        RoundedDrawable roundedDrawable = new RoundedDrawable(bitmap);
-        avatarImg.setImageDrawable(roundedDrawable);
+        CircleImageView avatarImg = (CircleImageView) headerLayout.findViewById(R.id.avatar);
+        DataManager.getInstance().getPicasso()
+                .load(mDataManager.getPreferencesManager().loadUserAvatar())
+                .fit()
+                .centerCrop()
+                .error(R.mipmap.ic_launcher)
+                .placeholder(R.mipmap.ic_launcher)
+                .into(avatarImg, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onError() {
+                        Log.d(TAG, "Could not fetch avatar");
+                    }
+                });
+    }
+
+    private void likeUser(final int position) {
+        final User user = mUsers.get(position);
+        if (!NetworkStatusChecker.isNetworkAvailable(this)) {
+            showSnackBar(getString(R.string.error_network_not_available));
+            return;
+        }
+        Call<UserLikeRes> call = mDataManager.likeUser(user.getRemoteId());
+        call.enqueue(new Callback<UserLikeRes>() {
+            @Override
+            public void onResponse(Call<UserLikeRes> call, Response<UserLikeRes> response) {
+                if (response.code() == 200) {
+                    UserInfoRes.ProfileValues data = response.body().getData();
+                    user.setRating(data.getFullRating());
+                    user.setCodeLines(data.getLinesCode());
+                    user.setProjects(data.getProjects());
+
+                    mDataManager.getDaoSession().getLikeDao().insert(
+                            new Like(mDataManager.getPreferencesManager().getUserId(), user.getRemoteId())
+                    );
+                    user.resetLikes();
+
+                    mUsersAdapter.notifyItemChanged(position);
+                } else if (response.code() == 404) {
+                    showSnackBar(getString(R.string.error_wrong_login_or_password));
+                } else {
+                    showSnackBar(getString(R.string.error_all_bad));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserLikeRes> call, Throwable t) {
+                if (!NetworkStatusChecker.isNetworkAvailable(UserListActivity.this)) {
+                    showSnackBar(getString(R.string.error_network_not_available));
+                } else {
+                    showSnackBar(getString(R.string.error_all_bad));
+                }
+            }
+        });
+    }
+
+    private void unlikeUser(final int position) {
+        final User user = mUsers.get(position);
+        if (!NetworkStatusChecker.isNetworkAvailable(this)) {
+            showSnackBar(getString(R.string.error_network_not_available));
+            return;
+        }
+        Call<UserLikeRes> call = mDataManager.unlikeUser(user.getRemoteId());
+        call.enqueue(new Callback<UserLikeRes>() {
+            @Override
+            public void onResponse(Call<UserLikeRes> call, Response<UserLikeRes> response) {
+                if (response.code() == 200) {
+                    UserInfoRes.ProfileValues data = response.body().getData();
+                    user.setRating(data.getFullRating());
+                    user.setCodeLines(data.getLinesCode());
+                    user.setProjects(data.getProjects());
+
+                    List<Like> likes = mDataManager.getDaoSession().queryBuilder(Like.class).where(
+                            LikeDao.Properties.UserRemoteId.eq(user.getRemoteId()),
+                            LikeDao.Properties.LikedUserId.eq(mDataManager.getPreferencesManager().getUserId())
+                    ).list();
+                    for (Like like : likes) {
+                        like.delete();
+                    }
+                    user.resetLikes();
+
+                    mUsersAdapter.notifyItemChanged(position);
+                } else if (response.code() == 404) {
+                    showSnackBar(getString(R.string.error_wrong_login_or_password));
+                } else {
+                    showSnackBar(getString(R.string.error_all_bad));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserLikeRes> call, Throwable t) {
+                if (!NetworkStatusChecker.isNetworkAvailable(UserListActivity.this)) {
+                    showSnackBar(getString(R.string.error_network_not_available));
+                } else {
+                    showSnackBar(getString(R.string.error_all_bad));
+                }
+            }
+        });
     }
 }

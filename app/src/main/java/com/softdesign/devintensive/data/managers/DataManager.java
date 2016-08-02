@@ -8,6 +8,7 @@ import com.softdesign.devintensive.data.network.ServiceGenerator;
 import com.softdesign.devintensive.data.network.requests.UserLoginReq;
 import com.softdesign.devintensive.data.network.responses.UploadPhotoRes;
 import com.softdesign.devintensive.data.network.responses.UserInfoRes;
+import com.softdesign.devintensive.data.network.responses.UserLikeRes;
 import com.softdesign.devintensive.data.network.responses.UserListRes;
 import com.softdesign.devintensive.data.network.responses.UserModelRes;
 import com.softdesign.devintensive.data.storage.models.DaoSession;
@@ -79,9 +80,17 @@ public class DataManager {
         return mRestService.uploadAvatar(userId, file);
     }
 
+    public Call<UserLikeRes> likeUser(String userId) {
+        return mRestService.likeUser(userId);
+    }
+
+    public Call<UserLikeRes> unlikeUser(String userId) {
+        return mRestService.unlikeUser(userId);
+    }
+
     //endregion
 
-    // region ==================== Database =======================
+    //region ==================== Database =======================
 
 
     public DaoSession getDaoSession() {

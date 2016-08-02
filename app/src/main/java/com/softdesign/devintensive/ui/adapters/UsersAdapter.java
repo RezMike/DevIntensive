@@ -10,12 +10,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.softdesign.devintensive.R;
 import com.softdesign.devintensive.data.managers.DataManager;
 import com.softdesign.devintensive.data.storage.models.DaoSession;
+import com.softdesign.devintensive.data.storage.models.Like;
 import com.softdesign.devintensive.data.storage.models.User;
 import com.softdesign.devintensive.ui.custom.CustomClickListener;
 import com.softdesign.devintensive.ui.views.AspectRatioImageView;
@@ -122,9 +124,16 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
                     });
 
             holder.mFullName.setText(user.getFullName());
-            holder.mRating.setText(String.valueOf(user.getRating()));
+            holder.mRating.setText(String.valueOf(user.getFullRating()));
             holder.mCodeLines.setText(String.valueOf(user.getCodeLines()));
             holder.mProjects.setText(String.valueOf(user.getProjects()));
+            holder.mLikesNumber.setText(String.valueOf(user.getLikes().size()));
+
+            if (isUserLiked(user)) {
+                holder.mLikesImg.setImageResource(R.drawable.like_active_orange_24dp);
+            } else {
+                holder.mLikesImg.setImageResource(R.drawable.like_inactive_orange_24dp);
+            }
 
             if (user.getBio() == null || user.getBio().isEmpty()) {
                 holder.mBio.setVisibility(View.GONE);
@@ -183,6 +192,15 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         user2.update();
     }
 
+    private boolean isUserLiked(User user) {
+        List<Like> likes = user.getLikes();
+        String userId = DataManager.getInstance().getPreferencesManager().getUserId();
+        for (Like like : likes) {
+            if (like.getLikedUserId().equals(userId)) return true;
+        }
+        return false;
+    }
+
     @Override
     public Filter getFilter() {
         return mFilter;
@@ -195,9 +213,10 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     public class UserViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         protected AspectRatioImageView userPhoto;
 
-        protected LinearLayout mDeletedLayout;
-        protected LinearLayout mNotDeletedLayout;
-        protected TextView mFullName, mRating, mCodeLines, mProjects, mBio, mDeleted, mRevert;
+        protected LinearLayout mDeletedLayout, mNotDeletedLayout;
+        protected LinearLayout mLikesLayout;
+        protected TextView mFullName, mRating, mCodeLines, mProjects, mBio, mDeleted, mRevert, mLikesNumber;
+        protected ImageView mLikesImg;
         protected Button mShowMore;
         protected Drawable mDummy;
 
@@ -210,6 +229,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             userPhoto = (AspectRatioImageView) itemView.findViewById(R.id.user_photo_img);
             mDeletedLayout = (LinearLayout) itemView.findViewById(R.id.user_deleted_layout);
             mNotDeletedLayout = (LinearLayout) itemView.findViewById(R.id.user_not_deleted_layout);
+            mLikesLayout = (LinearLayout) itemView.findViewById(R.id.likes_layout);
             mFullName = (TextView) itemView.findViewById(R.id.user_full_name_tv);
             mRating = (TextView) itemView.findViewById(R.id.user_rating_tv);
             mCodeLines = (TextView) itemView.findViewById(R.id.user_code_lines_tv);
@@ -217,16 +237,33 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             mBio = (TextView) itemView.findViewById(R.id.user_bio_tv);
             mDeleted = (TextView) itemView.findViewById(R.id.user_deleted_tv);
             mRevert = (TextView) itemView.findViewById(R.id.user_deleted_revert_tv);
+            mLikesNumber = (TextView) itemView.findViewById(R.id.likes_number);
+            mLikesImg = (ImageView) itemView.findViewById(R.id.likes_img);
             mShowMore = (Button) itemView.findViewById(R.id.more_info_btn);
 
-            mDummy = userPhoto.getContext().getResources().getDrawable(R.drawable.user_bg);
+            mLikesLayout.setOnClickListener(this);
             mShowMore.setOnClickListener(this);
+            mDummy = userPhoto.getContext().getResources().getDrawable(R.drawable.user_bg);
         }
 
         @Override
         public void onClick(View v) {
-            if (mListener != null) {
-                mListener.onUserItemClickListener(mUsers.indexOf(mFilteredUsers.get(getAdapterPosition())));
+            if (mListener == null) return;
+
+            int position = mUsers.indexOf(mFilteredUsers.get(getAdapterPosition()));
+            switch (v.getId()) {
+                case R.id.more_info_btn:
+                    mListener.onUserItemClickListener(ConstantManager.START_PROFILE_ACTIVITY_KEY, position);
+                    break;
+                case R.id.likes_layout:
+                    String action;
+                    if (isUserLiked(mFilteredUsers.get(getAdapterPosition()))) {
+                        action = ConstantManager.UNLIKE_USER_KEY;
+                    } else {
+                        action = ConstantManager.LIKE_USER_KEY;
+                    }
+                    mListener.onUserItemClickListener(action, position);
+                    break;
             }
         }
     }
@@ -246,10 +283,23 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             if (constraint.length() == 0) {
                 mFilteredUsers.addAll(mUsers);
             } else {
-                String filterPattern = constraint.toString().toLowerCase().trim();
-                for (User user : mUsers) {
-                    if (user.getFullName().toLowerCase().contains(filterPattern)) {
-                        mFilteredUsers.add(user);
+                String filterString = constraint.toString().toLowerCase().trim();
+                if (filterString.contains(" ")) {
+                    int spaceIndex = filterString.indexOf(" ");
+                    String filterPattern1 = filterString.substring(0, spaceIndex - 1);
+                    String filterPattern2 = filterString.substring(spaceIndex + 1, filterString.length());
+                    for (User user : mUsers) {
+                        String userName = user.getFullName().toLowerCase();
+                        if (userName.contains(filterPattern1)
+                                && userName.contains(filterPattern2)) {
+                            mFilteredUsers.add(user);
+                        }
+                    }
+                } else {
+                    for (User user : mUsers) {
+                        if (user.getFullName().toLowerCase().contains(filterString)) {
+                            mFilteredUsers.add(user);
+                        }
                     }
                 }
             }

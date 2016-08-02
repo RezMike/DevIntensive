@@ -3,13 +3,11 @@ package com.softdesign.devintensive.data.storage.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.softdesign.devintensive.data.network.responses.UserInfoRes;
-import com.softdesign.devintensive.data.network.responses.UserListRes;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserDTO implements Parcelable {
+    private String mRemoteId;
     private String mPhoto;
     private String mFullName;
     private String mRating;
@@ -21,9 +19,10 @@ public class UserDTO implements Parcelable {
     public UserDTO(User userData) {
         List<String> repoLink = new ArrayList<>();
 
+        mRemoteId = userData.getRemoteId();
         mPhoto = userData.getPhoto();
         mFullName = userData.getFullName();
-        mRating = String.valueOf(userData.getRating());
+        mRating = String.valueOf(userData.getFullRating());
         mCodeLines = String.valueOf(userData.getCodeLines());
         mProjects = String.valueOf(userData.getProjects());
         mBio = String.valueOf(userData.getBio());
@@ -35,6 +34,7 @@ public class UserDTO implements Parcelable {
     }
 
     protected UserDTO(Parcel in) {
+        mRemoteId = in.readString();
         mPhoto = in.readString();
         mFullName = in.readString();
         mRating = in.readString();
@@ -56,6 +56,7 @@ public class UserDTO implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mRemoteId);
         dest.writeString(mPhoto);
         dest.writeString(mFullName);
         dest.writeString(mRating);
@@ -81,6 +82,10 @@ public class UserDTO implements Parcelable {
             return new UserDTO[size];
         }
     };
+
+    public String getRemoteId() {
+        return mRemoteId;
+    }
 
     public String getPhoto() {
         return mPhoto;
