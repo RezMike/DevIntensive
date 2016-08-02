@@ -139,9 +139,5 @@
                     android:inputType="textMultiLine"/>
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>
-
-        <ImageView
-            style="@style/icon.right"
-            android:src="@drawable/ic_visibility_grey_24dp"/>
     </LinearLayout>
 </LinearLayout>

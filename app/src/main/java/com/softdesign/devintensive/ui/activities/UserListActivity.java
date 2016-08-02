@@ -18,6 +18,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,6 +39,7 @@ import com.softdesign.devintensive.ui.adapters.UsersAdapter;
 import com.softdesign.devintensive.ui.custom.CustomClickListener;
 import com.softdesign.devintensive.ui.custom.RoundedDrawable;
 import com.softdesign.devintensive.ui.fragments.SearchRetainedFragment;
+import com.softdesign.devintensive.ui.views.CircleImageView;
 import com.softdesign.devintensive.utils.ConstantManager;
 import com.softdesign.devintensive.utils.ItemTouchHelperCallback;
 import com.softdesign.devintensive.utils.NetworkStatusChecker;
@@ -160,6 +162,15 @@ public class UserListActivity extends BaseActivity {
                 mRecyclerView.getLayoutManager().onSaveInstanceState());
     }
 
+    @Override
+    public void onBackPressed() {
+        if (mNavigationDrawer.isDrawerOpen(GravityCompat.START)) {
+            mNavigationDrawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     private void loadUsersFromDb() {
         try {
             showProgress();
@@ -252,6 +263,8 @@ public class UserListActivity extends BaseActivity {
         userName.setText(mDataManager.getPreferencesManager().getUserName());
         userEmail.setText(mDataManager.getPreferencesManager().getEmail());
 
+        mNavigationView.setCheckedItem(R.id.team_menu);
+
         setRoundedAvatar();
 
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -278,10 +291,24 @@ public class UserListActivity extends BaseActivity {
 
     private void setRoundedAvatar() {
         View headerLayout = mNavigationView.getHeaderView(0);
-        ImageView avatarImg = (ImageView) headerLayout.findViewById(R.id.avatar);
-        Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.avatar);
-        RoundedDrawable roundedDrawable = new RoundedDrawable(bitmap);
-        avatarImg.setImageDrawable(roundedDrawable);
+        CircleImageView avatarImg = (CircleImageView) headerLayout.findViewById(R.id.avatar);
+        DataManager.getInstance().getPicasso()
+                .load(mDataManager.getPreferencesManager().loadUserAvatar())
+                .fit()
+                .centerCrop()
+                .error(R.mipmap.ic_launcher)
+                .placeholder(R.mipmap.ic_launcher)
+                .into(avatarImg, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onError() {
+                        Log.d(TAG, "Could not fetch avatar");
+                    }
+                });
     }
 
     private void likeUser(final int position) {
