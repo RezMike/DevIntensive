@@ -161,10 +161,8 @@ public class ProfileUserActivity extends BaseActivity implements View.OnClickLis
         ListAdapter adapter = listView.getAdapter();
 
         View view = adapter.getView(0, null, listView);
-        view.measure(
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-        );
+        int measureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        view.measure(measureSpec, measureSpec);
 
         int totalHeight = view.getMeasuredHeight() * adapter.getCount();
 
