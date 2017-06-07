@@ -3,6 +3,8 @@ package com.softdesign.devintensive.utils;
 import android.content.Context;
 import android.util.TypedValue;
 
+import com.softdesign.devintensive.DevintensiveApplication;
+
 public class UiHelper {
     private static Context sContext = DevintensiveApplication.getContext();
 

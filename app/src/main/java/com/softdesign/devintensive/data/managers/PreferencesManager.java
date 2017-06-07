@@ -4,9 +4,8 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 import com.softdesign.devintensive.R;
-import com.softdesign.devintensive.ui.custom.EditTextWatcher;
 import com.softdesign.devintensive.utils.ConstantManager;
-import com.softdesign.devintensive.utils.DevintensiveApplication;
+import com.softdesign.devintensive.DevintensiveApplication;
 
 import java.util.ArrayList;
 import java.util.List;

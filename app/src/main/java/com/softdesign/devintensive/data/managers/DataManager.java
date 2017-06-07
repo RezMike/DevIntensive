@@ -12,7 +12,7 @@ import com.softdesign.devintensive.data.network.responses.UserLikeRes;
 import com.softdesign.devintensive.data.network.responses.UserListRes;
 import com.softdesign.devintensive.data.network.responses.UserModelRes;
 import com.softdesign.devintensive.data.storage.models.DaoSession;
-import com.softdesign.devintensive.utils.DevintensiveApplication;
+import com.softdesign.devintensive.DevintensiveApplication;
 import com.squareup.picasso.Picasso;
 
 import okhttp3.MultipartBody;

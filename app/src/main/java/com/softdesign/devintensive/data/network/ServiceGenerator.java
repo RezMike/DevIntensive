@@ -3,7 +3,7 @@ package com.softdesign.devintensive.data.network;
 import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.softdesign.devintensive.data.network.interceptors.HeaderInterceptor;
 import com.softdesign.devintensive.utils.AppConfig;
-import com.softdesign.devintensive.utils.DevintensiveApplication;
+import com.softdesign.devintensive.DevintensiveApplication;
 
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
