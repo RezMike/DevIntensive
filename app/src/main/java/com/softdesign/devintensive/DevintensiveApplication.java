@@ -1,4 +1,4 @@
-package com.softdesign.devintensive.utils;
+package com.softdesign.devintensive;
 
 import android.app.Application;
 import android.content.Context;

@@ -22,7 +22,7 @@ import com.softdesign.devintensive.data.storage.models.User;
 import com.softdesign.devintensive.ui.custom.CustomClickListener;
 import com.softdesign.devintensive.ui.views.AspectRatioImageView;
 import com.softdesign.devintensive.utils.ConstantManager;
-import com.softdesign.devintensive.utils.DevintensiveApplication;
+import com.softdesign.devintensive.DevintensiveApplication;
 import com.softdesign.devintensive.utils.ItemTouchHelperAdapter;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
@@ -34,13 +34,13 @@ import java.util.List;
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder>
         implements Filterable, ItemTouchHelperAdapter {
     private static final String TAG = ConstantManager.TAG_PREFIX + "UsersAdapter";
-    Context mContext;
-    List<User> mUsers;
-    List<User> mFilteredUsers;
-    List<User> mRemovalUsers;
-    CustomClickListener mCustomClickListener;
-    UserFilter mFilter;
-    DaoSession mDaoSession;
+    private Context mContext;
+    private List<User> mUsers;
+    private List<User> mFilteredUsers;
+    private List<User> mRemovalUsers;
+    private CustomClickListener mCustomClickListener;
+    private UserFilter mFilter;
+    private DaoSession mDaoSession;
 
     public UsersAdapter(List<User> users, CustomClickListener customClickListener) {
         mUsers = users;
